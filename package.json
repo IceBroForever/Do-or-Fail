@@ -1,0 +1,23 @@
+{
+  "name": "webprogbase2",
+  "version": "1.0.0",
+  "description": "Link to documentation: https://docs.google.com/document/d/1Ftk0TqxirD_68yh-0_aemV-zvsTga8V73m8ohgK60-w/edit?usp=sharing",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://IceBro@bitbucket.org/IceBro/webprogbase2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/IceBro/webprogbase2#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "busboy-body-parser": "^0.3.0",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "fs-extra": "^4.0.2"
+  }
+}
