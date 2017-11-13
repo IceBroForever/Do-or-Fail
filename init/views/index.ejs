@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Train</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+</head>
+
+<body>
+    <video id="video" autoplay></video>
+
+    <script>
+        var video = document.getElementById("video");
+        var localStream;
+
+        var pcs = [];
+
+        function newPC(id) {
+            let pc = new RTCPeerConnection();
+            pc.id = id;
+
+            pc.is = [];
+
+            pc.onicecandidate = (e) => {
+                if (e.candidate) pc.is.push(e.candidate);
+            }
+
+            pc.addStream(localStream);
+            
+            pcs.push(pc);
+        }
+
+        function success(stream) {
+            localStream = stream;
+            video.src = URL.createObjectURL(stream);
+        }
+
+        function fail() {
+            console.log("Fuck this shit, I`m out");
+        }
+
+        navigator.getUserMedia({ video: true, audio: true }, success, fail);
+
+        const socket = io("/streamer");
+
+        socket.on("createOffer", (id) => {
+            newPC(id);
+            let pc = pcs.find((p) => p.id == id);
+            pc.createOffer({
+                offerToReceiveAudio: 1,
+                offerToReceiveVideo: 1
+            })
+                .then((desc) => {
+                    pc.setLocalDescription(desc);
+                    socket.emit("offer", { id: id, desc: desc });
+                });
+        });
+
+        socket.on("answer", (data) => {
+            let pc = pcs.find((p) => p.id == data.id);
+            pc.setRemoteDescription(data.desc);
+            pc.is.forEach((c) => {
+                socket.emit("ice", { id: data.id, candidate: c });
+            })
+        })
+
+        socket.on("ice", (data) => {
+            let pc = pcs.find((p) => p.id == data.id);
+            pc.addIceCandidate(data.candidate);
+        })
+
+    </script>
+</body>

@@ -1,0 +1,67 @@
+let localVideo = document.getElementById("localVideo");
+        let remoteVideo = document.getElementById("remoteVideo");
+
+        function start() {
+
+            let options = {
+                video: true,
+                audio: true
+            }
+
+            function onSuccess(localStream) {
+                window.localStream = localStream;
+                localVideo.src = window.URL.createObjectURL(localStream);
+            }
+
+            function onFail(error) {
+                console.log(`Uuups, some error: ${error}`);
+            }
+
+            navigator.getUserMedia(options, onSuccess, onFail);
+        }
+
+        function call() {
+            pc1 = new RTCPeerConnection();
+            pc1.onicecandidate = (e) => {
+                console.log("1")
+                onIceCandidate(pc1, e);
+            }
+
+            pc2 = new RTCPeerConnection();
+            pc2.onicecandidate = (e) => {
+                console.log("2")
+                onIceCandidate(pc2, e);
+            }
+
+            function onIceCandidate(pc, e) {
+                if (e.candidate) {
+                    console.log(pc === pc1 ? "pc2" : "pc1");
+                    (pc === pc1 ? pc2 : pc1).addIceCandidate(new RTCIceCandidate(e.candidate));
+                }
+            }
+
+            pc2.onaddstream = (e) => {
+                window.remoteStream = e.stream;
+                remoteVideo.src = URL.createObjectURL(remoteStream);
+            }
+
+            pc1.addStream(localStream);
+
+            pc1.createOffer({
+                offerToReceiveAudio: 1,
+                offerToReceiveVideo: 1
+            })
+                .then((desc) => {
+                    pc1.setLocalDescription(desc);
+                    pc2.setRemoteDescription(desc);
+
+                    pc2.createAnswer({
+                        offerToReceiveAudio: 1,
+                        offerToReceiveVideo: 1
+                    })
+                        .then((d) => {
+                            pc2.setLocalDescription(d);
+                            pc1.setRemoteDescription(d);
+                        })
+                })
+        }
