@@ -1,6 +1,6 @@
 import React from "react"
 import axios from "axios"
-import { Link } from "react-router-dom"
+import { Link, Redirect } from "react-router-dom"
 
 export default class Login extends React.Component {
 
@@ -29,8 +29,13 @@ export default class Login extends React.Component {
             role
         })
             .then((responce) => {
-                console.dir(responce);
+                if (responce.data.error) this.setState({ message: responce.data.error })
+                else{
+                    this.props.onLogin(responce.data);
+                    this.setState({ redirectTo: "/" });
+                }
             })
+
         event.preventDefault();
     }
 
@@ -47,6 +52,8 @@ export default class Login extends React.Component {
     }
 
     render() {
+        if (this.state.redirectTo) return <Redirect to={this.state.redirectTo} />
+
         let messageElement = <span>{this.state.message}</span>;
 
         return (<form onSubmit={this.handleSubmit}>

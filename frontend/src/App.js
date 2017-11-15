@@ -17,19 +17,19 @@ export default class App extends React.Component {
         this.onLogin = this.onLogin.bind(this);
     }
 
-    onLogin(props){
+    onLogin(props) {
         this.setState(props);
     }
 
     render() {
         return (
             <Switch>
-                <Route exact path="/" component={() => {
-                    if(this.state.login) return (<h1>{this.state.login}</h1>);
+                <Route exact path="/" render={() => {
+                    if (this.state.login) return (<h1>{this.state.login}</h1>);
                     else return (<Redirect to="/login" />);
                 }} />
-                <Route exact path="/login" component={Login} />
-                <Route exact path="/register" component={Register} />
+                <Route exact path="/login" render={() => { return <Login onLogin={this.onLogin} /> }} />
+                <Route exact path="/register" render={() => { return <Register onLogin={this.onLogin} /> }} />
             </Switch>
         )
     }

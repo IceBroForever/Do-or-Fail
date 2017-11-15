@@ -66,7 +66,7 @@ app.post('/register', (req, res) => {
 
 	userDB.getByLogin(login)
 		.then((user) => {
-			if (user) throw new Error("Login is already used");
+			if (user) return new Promise((resolve, reject) => reject(new Error("Login is already used")));
 			else return userDB.create(login, password, avatar)
 				.then(() => userDB.getByLogin(login))
 				.then((user) => {

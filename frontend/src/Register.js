@@ -23,6 +23,7 @@ export default class Register extends React.Component {
         this.handleRoleChange = this.handleRoleChange.bind(this);
         this.handleAvatarChange = this.handleAvatarChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.onLogin = this.props.onLogin;
     }
 
     handleLoginChange(event) {
@@ -77,13 +78,19 @@ export default class Register extends React.Component {
                         headers: { 'Content-Type': undefined }
                     })
                     .then((responce) => {
-
+                        if (responce.data.error) this.setState({ message: responce.data.error })
+                        else{
+                            this.props.onLogin(responce.data);
+                            this.setState({ redirectTo: "/" });
+                        }
                     });
             }
         }
     }
 
     render() {
+        if (this.state.redirectTo) return <Redirect to={this.state.redirectTo} />
+        
         let messageElement = (<span>{this.state.message}</span>);
 
         let avatarPreview = null;
