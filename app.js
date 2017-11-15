@@ -18,14 +18,14 @@ const serverSalt = "UWillNeverGuessThis",
 const playersDB = require("./playersDB"),
 	watchersDB = require("./watchersDB");
 
-app.use(express.static("frontend/build"));
+app.use(express.static("/app/frontend/build"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(busboy({ limit: '5mb' }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-	res.sendFile("frontend/build/index.html");
+	res.sendFile("/app/frontend/build/index.html");
 });
 
 app.post('/login', (req, res) => {
