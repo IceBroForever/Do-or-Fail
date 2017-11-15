@@ -6,7 +6,8 @@ const express = require("express"),
 	cookieParser = require('cookie-parser'),
 	crypto = require('crypto'),
 	jsonwebtoken = require('jsonwebtoken'),
-	jwt = require('express-jwt');
+	jwt = require('express-jwt'),
+	path = require('path');
 
 const app = express(),
 	server = require('http').Server(app),
@@ -18,14 +19,14 @@ const serverSalt = "UWillNeverGuessThis",
 const playersDB = require("./playersDB"),
 	watchersDB = require("./watchersDB");
 
-app.use(express.static(__dirname + "/frontend/build"));
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(busboy({ limit: '5mb' }));
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
-	res.sendFile(__dirname + "/frontend/build/index.html");
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname, 'frontend/build/index.html'));
 });
 
 app.post('/login', (req, res) => {
