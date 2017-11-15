@@ -9,6 +9,8 @@ mongoose.connect("mongodb://localhost:27017/Kursach", {
     .then(() => console.log("Connected to DB"))
     .catch((error) => console.log(error));
 
+const avatarDB = require("./avatarsDB");
+
 const playerSchema = new Schema({
     login: String,
     password: String,
@@ -22,65 +24,58 @@ const playerSchema = new Schema({
 
 const Player = mongoose.model("Player", playerSchema);
 
-async function create(login, password, avatar) {
-    let player = new Player({
-        login,
-        password,
-        complitedTasks: [],
-        failedTasks: [],
-        rejectedTasks: [],
-        avatar,
-        lastSeenOnline: new Date(),
-        position: {
-            latitute: 0,
-            longitute: 0
-        }
-    });
+function create(login, password, avatar) {
+    return avatarDB.create(avatar.name, avatar.data, avatar.mimetype)
+        .then((avatarId) => {
+            let player = new Player({
+                login,
+                password,
+                complitedTasks: [],
+                failedTasks: [],
+                rejectedTasks: [],
+                avatar: avatarId,
+                lastSeenOnline: new Date(),
+                position: {
+                    latitude: 0,
+                    longitude: 0
+                }
+            })
 
-    return player.save();
+            return player.save();
+        })
 }
 
-async function getAll() {
-    return Player.find();
+function getAll() {
+    return Player.find().exec();
 }
 
-async function getById(id) {
-    return Player.findById(id);
+function getById(id) {
+    return Player.findById(id).exec();
 }
 
-async function remove(id) {
-    return Player.findByIdAndRemove(id);
+function getByLogin(login) {
+    return Player.findOne({ login }).exec();
 }
 
-async function findOneByLogin(login) {
-    return Player.findOne({ login });
+function remove(id) {
+    Player.findById(id).exec()
+    .then((player) => {
+        return avatarDB.removeAvatarById(player.avatar);
+    })
+    .then(() => {
+        return Player.findByIdAndRemove(id);
+    })
 }
 
-async function findByLogin(login){
-    return Player.find()
-    .then((players) => {
-        return new Promise((resolve, reject) => {
-            let matched = [];
-
-            for(let player of players) {
-                if(~player.login.indexOf(login)) matched.push(player);
-            }
-
-            resolve(mathed);
-        });
-    });
-}
-
-async function update(id, changes) {
-    return Player.findByIdAndUpdate(id, changes);
+function update(id, updates) {
+    return Player.findByIdAndUpdate(id, updates).exec();
 }
 
 module.exports = {
     create,
     getAll,
     getById,
+    getByLogin,
     remove,
-    findOneByLogin,
-    findByLogin,
     update
 };

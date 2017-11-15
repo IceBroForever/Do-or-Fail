@@ -9,6 +9,8 @@ mongoose.connect("mongodb://localhost:27017/Kursach", {
     .then(() => console.log("Connected to DB"))
     .catch((error) => console.log(error));
 
+const avatarDB = require("./avatarsDB");
+
 const watcherSchema = new Schema({
     login: String,
     password: String,
@@ -18,57 +20,51 @@ const watcherSchema = new Schema({
 
 const Watcher = mongoose.model("Watcher", watcherSchema);
 
-async function create(login, password, avatar){
-    let watcher = new Watcher({
-        login,
-        password,
-        avatar
-    });
+function create(login, password, avatar) {
+    return avatarDB.create(avatar.name, avatar.data, avatar.mimetype)
+        .then((avatarId) => {
+            let watcher = new Watcher({
+                login,
+                password,
+                avatar: avatarId,
+                favoritePlayers: []
+            })
 
-    return watcher.save();
+            return watcher.save();
+        })
 }
 
-async function getAll() {
-    return Watcher.find();
+function getAll() {
+    return Watcher.find().exec();
 }
 
-async function getById(id){
-    return Watcher.findById(id);
+function getById(id) {
+    return Watcher.findById(id).exec();
 }
 
-async function remove(id){
-    return Watcher.findByIdAndRemove(id);
+function getByLogin(login) {
+    return Watcher.findOne({ login }).exec();
 }
 
-async function findOneByLogin(login) {
-    return Watcher.findOne({ login });
+function remove(id) {
+    Watcher.findById(id).exec()
+    .then((watcher) => {
+        return avatarDB.removeAvatarById(watcher.avatar);
+    })
+    .then(() => {
+        return Watcher.findByIdAndRemove(id);
+    })
 }
 
-async function findByLogin(login){
-    return Watcher.find()
-    .then((watchers) => {
-        return new Promise((resolve, reject) => {
-            let matched = [];
-
-            for(let watcher of watchers) {
-                if(~watcher.login.indexOf(login)) matched.push(watcher);
-            }
-
-            resolve(mathed);
-        });
-    });
-}
-
-async function update(id, changes){
-    return Watcher.findByIdAndUpdate(id, changes);
+function update(id, updates) {
+    return Watcher.findByIdAndUpdate(id, updates).exec();
 }
 
 module.exports = {
     create,
     getAll,
     getById,
+    getByLogin,
     remove,
-    findOneByLogin,
-    findByLogin,
     update
 };

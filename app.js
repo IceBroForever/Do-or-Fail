@@ -10,99 +10,91 @@ const app = express(),
 	server = require('http').Server(app),
 	io = require('socket.io')(server);
 
-const serverSalt = "UWillNeverGuessThis";
+const serverSalt = "UWillNeverGuessThis",
+	serverSecret = "ItsTheFifthSleeplessNight";
 
 const playersDB = require("./playersDB"),
 	watchersDB = require("./watchersDB");
 
 app.use(express.static("frontend/build"));
-app.use(express.static("frontend/src"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(busboy());
+app.use(busboy({ limit: '5mb' }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
 	res.sendFile("index.html");
 });
 
+app.post('/login', (req, res) => {
+	let { login, password, role } = req.body;
+	password = sha512(password, serverSalt).passwordHash;
+
+	let userDB = role == "player" ? playersDB : watchersDB;
+
+	userDB.getByLogin(login)
+	.then((user) => {
+		if(!user) throw new Error("No such user");
+
+		if(user.password !== password) throw new Error("Wrong password");
+
+		const token = jsonwebtoken.sign({
+			login,
+			id: user._id
+		}, serverSecret);
+
+		res.json({
+			login,
+			id: user._id,
+			token
+		})
+	})
+	.catch((error) => {
+		res.json({
+			error: error.message
+		})
+	})
+});
+
 app.post('/register', (req, res) => {
-	const { login, password, role, avatar } = req.body;
+	let { login, password, role } = req.body;
+	let { avatar } = req.files;
 
 	password = sha512(password, serverSalt).passwordHash;
 
-	let promise = role == "player" ?
-		playersDB.findOneByLogin(login) :
-		watchersDB.findOneByLogin(login);
+	let userDB = role == "player" ? playersDB : watchersDB;
 
-	promise.then((user) => {
-		return res.json({
-			error: "Login is used"
-		})
-	})
-		.catch((error) => role == "player" ?
-			playersDB.create(login, password, avatar) :
-			watchersDB.create(login, password, avatar))
-		.then(() => role == "player" ?
-			playersDB.findOneByLogin(login) :
-			watchersDB.findOneByLogin(login))
+	userDB.getByLogin(login)
 		.then((user) => {
-			const token = jsonwebtoken({
-				login,
-				id: user._id
-			})
+			if (user) throw new Error("Login is already used");
+			else return userDB.create(login, password, avatar)
+				.then(() => userDB.getByLogin(login))
+				.then((user) => {
+					const token = jsonwebtoken.sign({
+						login,
+						id: user._id
+					}, serverSecret)
 
-			return res.json({
-				login,
-				role,
-				id: user._id,
-				token
-			})
-		});
-});
+					console.log({
+						login,
+						id: user._id,
+						token
+					});
 
-app.post('/login', (req, res) => {
-	const { login, password } = req.body;
-	playersDB.findOneByLogin(login)
-		.then((user) => {
-			if (user.password !== sha512(password, serverSalt).passwordHash) return res.json({
-				error: "Wrong password"
-			});
-
-			const token = jsonwebtoken.sign({
-				login,
-				id: user.id
-			}, serverSalt);
-
-			return res.json({
-				login,
-				role: "player",
-				id: user._id,
-				token
+					res.json({
+						login,
+						id: user._id,
+						token
+					})
+				})
+		})
+		.catch((error) => {
+			console.log(error);
+			res.json({
+				error: error.message
 			})
 		})
-		.catch((error) => watchersDB.findByLogin(login))
-		.then((watcher) => {
-			if (watcher.password !== sha512(password, serverSalt).passwordHash) return res.json({
-				error: "Wrong password"
-			});
-
-			const token = jsonwebtoken.sign({
-				login,
-				id: watcher.id
-			}, serverSalt);
-
-			return res.json({
-				login,
-				role: "player",
-				id: watcher._id,
-				token
-			})
-		})
-		.catch((error) => res.json({
-			error: "No such user"
-		}));
-});
+})
 
 server.listen("4000", () => console.log("ready"));
 
