@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express"),
 	bodyParser = require("body-parser"),
 	busboy = require("busboy-body-parser"),
@@ -96,7 +98,7 @@ app.post('/register', (req, res) => {
 		})
 })
 
-server.listen("4000", () => console.log("ready"));
+server.listen(process.env.PORT, () => console.log("ready"));
 
 function sha512(password, salt) {
 	const hash = crypto.createHmac('sha512', salt);
