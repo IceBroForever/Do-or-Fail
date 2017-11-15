@@ -25,7 +25,7 @@ app.use(busboy({ limit: '5mb' }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-	res.sendFile("index.html");
+	res.sendFile("/index.html");
 });
 
 app.post('/login', (req, res) => {
