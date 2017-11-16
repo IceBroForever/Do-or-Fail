@@ -49,6 +49,7 @@ app.post('/login', (req, res) => {
 		res.json({
 			login,
 			id: user._id,
+			role,
 			token
 		})
 	})
@@ -78,15 +79,10 @@ app.post('/register', (req, res) => {
 						id: user._id
 					}, serverSecret)
 
-					console.log({
-						login,
-						id: user._id,
-						token
-					});
-
 					res.json({
 						login,
 						id: user._id,
+						role,
 						token
 					})
 				})

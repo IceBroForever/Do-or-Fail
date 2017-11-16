@@ -2,6 +2,7 @@ import React from 'react'
 import { Switch, Route, Redirect } from "react-router-dom"
 import Login from './Login'
 import Register from './Register'
+import PlayerInterface from './PlayerInterface'
 
 export default class App extends React.Component {
 
@@ -19,13 +20,16 @@ export default class App extends React.Component {
 
     onLogin(props) {
         this.setState(props);
+        console.log(props);
     }
 
     render() {
         return (
             <Switch>
                 <Route exact path="/" render={() => {
-                    if (this.state.login) return (<h1>{this.state.login}</h1>);
+                    if (this.state.login) {
+                        if(this.state.role == "player") return <PlayerInterface player={this.state} />
+                    }
                     else return (<Redirect to="/login" />);
                 }} />
                 <Route exact path="/login" render={() => { return <Login onLogin={this.onLogin} /> }} />
