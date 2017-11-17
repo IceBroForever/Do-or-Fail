@@ -1,5 +1,5 @@
 import React from "react"
-import axios from "axios"
+import request from "./request"
 import { Link, Redirect } from "react-router-dom"
 
 export default class Login extends React.Component {
@@ -23,14 +23,14 @@ export default class Login extends React.Component {
     handleSubmit(event) {
         const { login, password, role } = this.state;
 
-        axios.post('/login', {
-            login,
-            password,
-            role
+        request({
+            method: 'POST',
+            url: '/login',
+            data: { login, password, role }
         })
             .then((responce) => {
                 if (responce.data.error) this.setState({ message: responce.data.error })
-                else{
+                else {
                     this.props.onLogin(responce.data);
                     this.setState({ redirectTo: "/" });
                 }

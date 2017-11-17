@@ -21,7 +21,11 @@ export default class App extends React.Component {
 
     onLogin(props) {
         this.setState(props);
-        console.log(props);
+
+        localStorage.setItem('login', props.login);
+        localStorage.setItem('id', props.id);
+        localStorage.setItem('role', props.role);
+        localStorage.setItem('token', props.token);
     }
 
     render() {

@@ -1,5 +1,5 @@
 import React from "react"
-import axios from "axios"
+import request from "./request"
 import { Link, Redirect } from "react-router-dom"
 
 export default class Register extends React.Component {
@@ -73,13 +73,14 @@ export default class Register extends React.Component {
                 data.append('role', role);
                 data.append('avatar', avatar);
 
-                axios.post('/register', data,
-                    {
-                        headers: { 'Content-Type': undefined }
-                    })
+                request({
+                    method: 'POST',
+                    url: '/register',
+                    data
+                })
                     .then((responce) => {
                         if (responce.data.error) this.setState({ message: responce.data.error })
-                        else{
+                        else {
                             this.props.onLogin(responce.data);
                             this.setState({ redirectTo: "/" });
                         }
@@ -90,7 +91,7 @@ export default class Register extends React.Component {
 
     render() {
         if (this.state.redirectTo) return <Redirect to={this.state.redirectTo} />
-        
+
         let messageElement = (<span>{this.state.message}</span>);
 
         let avatarPreview = null;
