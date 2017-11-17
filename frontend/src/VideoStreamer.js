@@ -1,5 +1,4 @@
 import React from "react"
-import io from "socket.io"
 
 export default class VideoStreamer extends React.Component {
 
@@ -13,7 +12,7 @@ export default class VideoStreamer extends React.Component {
 
         this.peerConnections = [];
 
-        this.socket = io("/streamer");
+        
     }
 
     componentDidMount() {

@@ -9,9 +9,7 @@ const express = require("express"),
 	jwt = require('express-jwt'),
 	path = require('path');
 
-const app = express(),
-	server = require('http').Server(app),
-	io = require('socket.io')(server);
+const app = express();
 
 const serverSalt = "UWillNeverGuessThis",
 	serverSecret = "ItsTheFifthSleeplessNight";
@@ -95,7 +93,7 @@ app.post('/register', (req, res) => {
 		})
 })
 
-server.listen(process.env.PORT, () => console.log("ready"));
+app.listen(process.env.PORT, () => console.log("ready"));
 
 function sha512(password, salt) {
 	const hash = crypto.createHmac('sha512', salt);

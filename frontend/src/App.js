@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom"
 import Login from './Login'
 import Register from './Register'
 import PlayerInterface from './PlayerInterface'
+import WatcherInterface from './WatcherInterface'
 
 export default class App extends React.Component {
 
@@ -29,6 +30,7 @@ export default class App extends React.Component {
                 <Route exact path="/" render={() => {
                     if (this.state.login) {
                         if(this.state.role == "player") return <PlayerInterface player={this.state} />
+                        else return <WatcherInterface player={this.state} />
                     }
                     else return (<Redirect to="/login" />);
                 }} />
