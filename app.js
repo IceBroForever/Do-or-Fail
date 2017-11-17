@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(busboy({ limit: '5mb' }));
 app.use(cookieParser());
 
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
 	res.sendFile(path.join(process.env.PWD, 'public/index.html'));
 });
 
@@ -92,6 +92,8 @@ app.post('/register', (req, res) => {
 			})
 		})
 })
+
+app.use('/user', userRouter);
 
 app.listen(process.env.PORT, () => console.log("ready"));
 

@@ -7,7 +7,7 @@ router.get('/getOnlinePlayers', (req, res) => {
     playerDB.getAll()
         .then((players) => {
             players = players.filter((player) => {
-                return (Date.now() - player.lastSeenOnline) * 1000 * 60 < 1.0;
+                return (new Date() - player.lastSeenOnline) / 1000 / 60 < 1.0;
             });
 
             players = players.map((player) => player.id);

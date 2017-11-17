@@ -7,7 +7,8 @@ export default class PlayerInterface extends React.Component {
     constructor(props) {
         super(props);
 
-        setInterval(updatePositionOnServer, 10000);
+        updatePositionOnServer();
+        setInterval(updatePositionOnServer, 5000);
     }
 
     render() {
