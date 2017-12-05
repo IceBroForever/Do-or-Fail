@@ -18289,23 +18289,35 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+function resolveAfter2Seconds(x) {
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            resolve(x);
+        }, 2000);
+    });
+}
+
 var App = function (_React$Component) {
     _inherits(App, _React$Component);
 
     function App(props) {
         _classCallCheck(this, App);
 
-        return _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+
+        _this.onClick = _this.onClick.bind(_this);
+        return _this;
     }
 
     _createClass(App, [{
+        key: 'onClick',
+        value: async function onClick() {
+            console.log((await resolveAfter2Seconds('Hi there')));
+        }
+    }, {
         key: 'render',
         value: function render() {
-            return _react2.default.createElement(
-                'h1',
-                null,
-                'Hello'
-            );
+            return _react2.default.createElement('input', { type: 'button', onClick: this.onClick });
         }
     }]);
 

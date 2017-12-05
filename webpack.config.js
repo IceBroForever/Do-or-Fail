@@ -1,4 +1,3 @@
-
 let path = require('path');
 
 module.exports = {
@@ -19,13 +18,24 @@ module.exports = {
                 test: /\.js$/,
                 loader: 'babel-loader',
                 exclude: /node_modules/,
-                include: path.join(__dirname, 'client')
+                include: path.join(__dirname, 'client'),
+                query: {
+                    presets: ['es2015'],
+                    plugins: ['syntax-async-functions']
+                }
             },
             {
                 test: /\.jsx$/,
                 loader: 'babel-loader',
                 exclude: /node_modules/,
-                include: path.join(__dirname, 'client')
+                include: path.join(__dirname, 'client'),
+                query: {
+                    presets: [
+                        'es2015',
+                        'react'
+                    ],
+                    plugins: ['syntax-async-functions']
+                }
             }
         ]
     }
