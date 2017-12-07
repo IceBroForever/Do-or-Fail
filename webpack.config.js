@@ -10,8 +10,9 @@ module.exports = {
         publicPath: '/'
     },
     resolve: {
-        extensions: ['.js', '.jsx']
+        extensions: ['.js', '.jsx', '.sass']
     },
+    devtool: 'source-map',
     module: {
         rules: [
             {
@@ -36,6 +37,16 @@ module.exports = {
                     ],
                     plugins: ['syntax-async-functions']
                 }
+            },
+            {
+                test: /\.scss$/,
+                use: [{
+                    loader: "style-loader"
+                }, {
+                    loader: "css-loader?sourceMap"
+                }, {
+                    loader: "sass-loader?sourceMap"
+                }]
             }
         ]
     }

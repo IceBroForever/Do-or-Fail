@@ -4,7 +4,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <input type='button' onClick={this.onClick} />
+            <h1>123</h1>
         );
     }
 }
