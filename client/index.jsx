@@ -1,16 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import App from './src/App'
-import ConfigWraper from './src/ConfigWraper'
 
 import './styles/main.scss'
 
 ReactDOM.render(
     <MuiThemeProvider>
-        <ConfigWraper>
-            <App />
-        </ConfigWraper>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
     </MuiThemeProvider>,
     document.getElementById('root')
 )
