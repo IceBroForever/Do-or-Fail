@@ -2,15 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import App from './src/App'
-import AuthWrapper from './src/AuthWrapper'
+import ConfigWraper from './src/ConfigWraper'
 
 import './styles/main.scss'
 
 ReactDOM.render(
     <MuiThemeProvider>
-        <AuthWrapper>
+        <ConfigWraper>
             <App />
-        </AuthWrapper>
+        </ConfigWraper>
     </MuiThemeProvider>,
     document.getElementById('root')
 )
