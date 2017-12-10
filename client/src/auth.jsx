@@ -15,44 +15,40 @@ export default class auth {
 
     static async verifyAuthorization() {
         try {
-            let responce = await axios({
+            let response = await this.request({
                 url: '/verify',
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': undefined
-                }
+                method: 'POST'
             });
 
             localStorage.setItem('isAuthorized', true);
-            localStorage.setItem('login', responce.data.login);
-            localStorage.setItem('role', responce.data.role);
-            localStorage.setItem('token', responce.data.token);
+            localStorage.setItem('login', response.data.login);
+            localStorage.setItem('role', response.data.role);
 
         } catch (error) {
             this.logOut();
-            throw error.responce;
+            throw error;
         }
     }
 
-    static async logIn(login, password) {
+    static async logIn(login, password, role) {
         try {
-            let responce = await axios({
+            let response = await axios({
                 url: '/login',
                 method: 'POST',
                 data: {
                     login,
-                    password
+                    password,
+                    role
                 }
             });
 
             localStorage.setItem('isAuthorized', true);
-            localStorage.setItem('login', responce.data.login);
-            localStorage.setItem('role', responce.data.role);
-            localStorage.setItem('token', responce.data.token);
+            localStorage.setItem('login', response.data.login);
+            localStorage.setItem('role', response.data.role);
+            localStorage.setItem('token', response.data.token);
 
         } catch (error) {
-            throw error.responce;
+            throw error.response.data.error;
         }
     }
 
@@ -71,7 +67,7 @@ export default class auth {
                 data
             });
         } catch (error) {
-            throw error.responce;
+            throw error.response.data.error;
         }
     }
 
@@ -89,7 +85,7 @@ export default class auth {
         data = null
     }) {
         try {
-            await axios({
+            return await axios({
                 method,
                 url,
                 headers: {
@@ -100,7 +96,7 @@ export default class auth {
                 data
             })
         } catch (error) {
-            throw error.responce;
+            throw error.response.data.error;
         }
     }
 

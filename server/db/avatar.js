@@ -29,7 +29,7 @@ async function create(name, buffer, contentType) {
     });
 
     await avatar.save();
-    return (await avatar.findOne({ name, buffer, contentType }))._id;
+    return (await Avatar.findOne({ name, buffer, contentType }))._id;
 }
 
 async function getById(id) {

@@ -6,12 +6,6 @@ import RegisterWindow from './views/Register'
 
 export default class App extends React.Component {
 
-    async componentWillMount() {
-        try {
-            await auth.verifyAuthorization();
-        } catch (error) { }
-    }
-
     render() {
         return (
             <Switch>
@@ -19,7 +13,7 @@ export default class App extends React.Component {
                 <Route exact path='/register' component={RegisterWindow} />
                 <Route path='/' render={() => {
                     if (auth.isAuthorized()) return (
-                        <span>authorized</span>
+                        <span>authorized {localStorage.getItem('token')}</span>
                     );
                     else return (
                         <Redirect to='/login' />

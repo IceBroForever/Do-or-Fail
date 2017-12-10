@@ -27,7 +27,7 @@ export default class LoginWindow extends React.Component {
             passwordError: '',
             role: '',
             roleError: '',
-            redirectToReferer: false
+            loginned: false
         }
 
         this.handleLoginChange = this.handleLoginChange.bind(this);
@@ -72,37 +72,39 @@ export default class LoginWindow extends React.Component {
     async handleSubmit(event) {
         event.preventDefault();
 
+        let { login, password, role } = this.state;
         let loginError = '', passwordError = '', roleError = '';
 
-        if (!this.state.login || !/[a-zA-Z0-9._]{5,16}/.test(this.state.login)) {
-            if (this.state.login) loginError = patternError;
+        if (!login || !/[a-zA-Z0-9._]{5,16}/.test(login)) {
+            if (login) loginError = patternError;
             else loginError = requireError;
         }
 
-        if (!this.state.password || !/[a-zA-Z0-9._]{5,16}/.test(this.state.password)) {
-            if (this.state.password) passwordError = patternError;
+        if (!password || !/[a-zA-Z0-9._]{5,16}/.test(password)) {
+            if (password) passwordError = patternError;
             else passwordError = requireError;
         }
 
-        if (!this.state.role) roleError = requireError;
+        if (!role) roleError = requireError;
 
         if (!loginError && !passwordError && !roleError) {
-            // auth.authorizate(this.state.login, this.state.password)
-            //     .then(() => {
-            //         this.setState({
-            //             redirectToReferer: true
-            //         });
-            //     })
-            //     .catch(error => {
-            //         if (error == 'No such user')
-            //             loginError = responce.data.error;
-            //         else passwordError = responce.data.error;
+            try {
+                await auth.logIn(login, password, role);
 
-            //         this.setState({
-            //             loginError: loginError,
-            //             passwordError: passwordError
-            //         })
-            //     });
+                this.setState({
+                    loginned: true
+                })
+            } catch (error) {
+                if (error == 'No such user')
+                    loginError = error;
+                else passwordError = error;
+
+                this.setState({
+                    loginError: loginError,
+                    passwordError: passwordError,
+                    role: roleError
+                })
+            }
         } else {
             this.setState({
                 loginError,
@@ -113,13 +115,9 @@ export default class LoginWindow extends React.Component {
     }
 
     render() {
-        if (this.state.redirectToReferer) {
-            const { from } = this.props.location.state || { from: { pathname: '/' } };
-
-            return (
-                <Redirect to={from} />
-            );
-        }
+        if (this.state.loginned) return (
+            <Redirect to='/' />
+        );
 
         return (
             <div className='LoginAndRegisterForm'>

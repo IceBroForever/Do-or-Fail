@@ -1,8 +1,9 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Redirect } from 'react-router-dom'
 import { Card, CardTitle, CardText, CardActions } from 'material-ui/Card'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import FlatButton from 'material-ui/FlatButton'
 import CheckBox from 'material-ui/Checkbox'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton';
 import Visibility from 'material-ui/svg-icons/action/visibility';
@@ -28,7 +29,10 @@ export default class RegisterWindow extends React.Component {
             passwordError: '',
             secondPasswordError: '',
             role: '',
-            roleError: ''
+            roleError: '',
+            avatar: undefined,
+            avatarError: '',
+            registered: false
         }
 
         this.handleLoginChange = this.handleLoginChange.bind(this);
@@ -36,6 +40,7 @@ export default class RegisterWindow extends React.Component {
         this.handleSecondPasswordChange = this.handleSecondPasswordChange.bind(this);
         this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
         this.handleRoleChange = this.handleRoleChange.bind(this);
+        this.onAvatarChange = this.onAvatarChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -79,55 +84,71 @@ export default class RegisterWindow extends React.Component {
         });
     }
 
+    onAvatarChange(event) {
+        event.preventDefault();
+
+        if (event.target.files) {
+            this.setState({
+                avatar: event.target.files[0]
+            })
+        }
+    }
+
     async handleSubmit(event) {
         event.preventDefault();
 
-        let loginError = '', passwordError = '', secondPasswordError = '', roleError = '';
+        let loginError = '', passwordError = '', secondPasswordError = '', roleError = '', avatarError = '';
+        let { login, password, secondPassword, role, avatar } = this.state;
 
-        if (!this.state.login) loginError = requireError;
-        else if (!/[a-zA-Z0-9._]{5,16}/.test(this.state.login)) loginError = patternError;
+        if (!login) loginError = requireError;
+        else if (!/[a-zA-Z0-9._]{5,16}/.test(login)) loginError = patternError;
 
-        if (!this.state.password) passwordError = requireError;
-        else if (!/[a-zA-Z0-9._]{5,16}/.test(this.state.password)) passwordError = patternError;
-        else if (this.state.password != this.state.secondPassword) passwordError = 'Passwords do not match';
+        if (!password) passwordError = requireError;
+        else if (!/[a-zA-Z0-9._]{5,16}/.test(password)) passwordError = patternError;
+        else if (password != secondPassword) passwordError = 'Passwords do not match';
 
-        if (!this.state.secondPassword) secondPasswordError = requireError;
+        if (!secondPassword) secondPasswordError = requireError;
 
-        if(!this.state.role) roleError = requireError;
+        if (!role) roleError = requireError;
+
+        if (!avatar) avatarError = requireError;
 
         if (!loginError && !passwordError && !secondPasswordError && !roleError) {
-            // request({
-            //     method: 'POST',
-            //     url: '/register',
-            //     data: {
-            //         login: this.state.login,
-            //         password: this.state.password
-            //     }
-            // })
-            //     .then(responce => {
-            //         console.log(responce);
-            //         if (responce.data.error) {
-            //             this.setState({
-            //                 loginError: responce.data.error,
-            //                 passwordError,
-            //                 secondPasswordError
-            //             });
-            //         }
-            //         else {
+            try {
+                await auth.register(login, password, role, avatar);
 
-            //         }
-            //     });
+                this.setState({
+                    registered: true
+                })
+            } catch (error) {
+                loginError = error;
+
+                this.setState({
+                    loginError,
+                    passwordError,
+                    secondPasswordError,
+                    roleError,
+                    avatarError
+                });
+            }
         }
         else {
             this.setState({
                 loginError,
                 passwordError,
-                secondPasswordError
+                secondPasswordError,
+                roleError,
+                avatarError
             });
         }
     }
 
     render() {
+
+        if(this.state.registered) return (
+            <Redirect to='/' />
+        );
+
         return (
             <div className='LoginAndRegisterForm'>
                 <Card className='card'>
@@ -182,6 +203,20 @@ export default class RegisterWindow extends React.Component {
                             />
                         </RadioButtonGroup>
                     </CardText>
+                    <CardActions>
+                        <FlatButton
+                            containerElement={<label htmlFor='avatar' />}
+                            label='Upload avatar'
+                            secondary={this.state.avatarError != ''}
+                        >
+                            <input
+                                id='avatar'
+                                type="file"
+                                style={{ display: 'none' }}
+                                onChange={this.onAvatarChange}
+                            />
+                        </FlatButton>
+                    </CardActions>
                     <CardActions>
                         <RaisedButton
                             primary={true}
