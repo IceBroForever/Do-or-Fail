@@ -14,6 +14,7 @@ export default class auth {
     }
 
     static async verifyAuthorization() {
+        localStorage.setItem('isAuthorized', false);
         try {
             let response = await this.request({
                 url: '/verify',

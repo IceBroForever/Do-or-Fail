@@ -2287,6 +2287,7 @@ var auth = function () {
     }, {
         key: 'verifyAuthorization',
         value: async function verifyAuthorization() {
+            localStorage.setItem('isAuthorized', false);
             try {
                 var response = await this.request({
                     url: '/verify',
@@ -34707,7 +34708,7 @@ var App = function (_React$Component) {
                 _reactRouterDom.Switch,
                 null,
                 _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/login', component: _Login2.default }),
-                _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/register', component: _Register2.default }),
+                _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/resgister', component: _Register2.default }),
                 _react2.default.createElement(_reactRouterDom.Route, { path: '/', render: function render() {
                         if (_auth2.default.isAuthorized()) return _react2.default.createElement(
                             'span',

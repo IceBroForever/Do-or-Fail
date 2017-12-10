@@ -85,7 +85,7 @@ app.post('/login', async (req, res, next) => {
 app.post('/verify', async (req, res, next) => {
     passport.authenticate('bearer', {session: false}, (error, user, unfo) => {
         if(error) return next(error);
-
+        console.log('here');
         return res.json({
             login: user.login,
             role: user.role

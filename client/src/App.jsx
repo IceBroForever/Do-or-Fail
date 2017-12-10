@@ -10,7 +10,7 @@ export default class App extends React.Component {
         return (
             <Switch>
                 <Route exact path='/login' component={LoginWindow} />
-                <Route exact path='/register' component={RegisterWindow} />
+                <Route exact path='/resgister' component={RegisterWindow} />
                 <Route path='/' render={() => {
                     if (auth.isAuthorized()) return (
                         <span>authorized {localStorage.getItem('token')}</span>
