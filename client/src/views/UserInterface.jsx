@@ -15,8 +15,14 @@ export default class UserInterface extends React.Component {
     render() {
         return (
             <div className='Interface'>
-                <Header />
-                {auth.getRole() == 'player' ? <PlayerInterface /> : <WatcherInterface />}
+                <div className='Header'>
+                    <Header />
+                </div>
+                <div className='UserInterface'>
+                    {auth.getRole() == 'player' ?
+                        <PlayerInterface /> :
+                        <WatcherInterface />}
+                </div>
             </div>
         );
     }

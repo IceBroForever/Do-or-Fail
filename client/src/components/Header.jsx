@@ -31,6 +31,11 @@ export default class Header extends React.Component {
 
         return (
             <AppBar
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center'
+                }}
                 iconElementLeft={
                     <Avatar
                         src={'/' + auth.getRole() + '/' + auth.getLogin() + '/cover'}
@@ -42,6 +47,9 @@ export default class Header extends React.Component {
                         onClick={this.onLogOut}
                     />
                 }
+                iconStyleRight={{
+                    marginTop: '-7px' 
+                }}
                 title={auth.getLogin()}
             />
 

@@ -1,14 +1,19 @@
 import React from 'react'
+import GoogleMap from '../components/GoogleMap'
+
+import '../../styles/GoogleMap.scss'
 
 export default class WatcherInterface extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
     }
 
-    render(){
-        return(
-            <span>Watcher</span>
+    render() {
+        return (
+            <div className='GoogleMap'>
+                <GoogleMap google={window.google} />
+            </div>
         );
     }
 

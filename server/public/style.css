@@ -17,12 +17,25 @@
     align-items: center;
     align-content: center;
     margin-top: 0.5cm; }
+.GoogleMap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%; }
 .Interface {
   position: relative;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%; }
+  .Interface .Header {
+    position: relative;
+    width: 100%;
+    height: 1.5cm; }
+  .Interface .UserInterface {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 1.5cm); }
 /**
  * Retrieves a color value from the $material-colors Sass map
  * Inspired by https://github.com/nilskaspersson/Google-Material-UI-Color-Palette/
