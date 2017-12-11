@@ -36,7 +36,18 @@ const playerSchema = new Schema({
         default: []
     },
     avatar: Schema.ObjectId,
-    lastSeenOnline: Date,
+    online: {
+        type: Boolean,
+        default: false
+    },
+    lastSeenOnline: {
+        type: Date,
+        default: null
+    },
+    timerId: {
+        type: String,
+        default: ''
+    },
     position: {
         latitude: {
             type: Number,
@@ -49,29 +60,29 @@ const playerSchema = new Schema({
     }
 })
 
-playerSchema.methods.changeLogin = async (newLogin) => {
+playerSchema.methods.changeLogin = async function (newLogin) {
     this.login = newLogin;
     return await this.save();
 }
 
-playerSchema.methods.changePassword = async (newPassword) => {
+playerSchema.methods.changePassword = async function (newPassword) {
     this.password = newPassword;
     return await this.save();
 }
 
-playerSchema.methods.updatePosition = async (position) => {
+playerSchema.methods.updatePosition = async function (position) {
     this.position = position;
     this.lastSeenOnline = new Date();
     return await this.save();
 }
 
-playerSchema.methods.setActiveTask = async (taskID) => {
+playerSchema.methods.setActiveTask = async function (taskID) {
     if (this.activeTask) throw new Error('Player has already active task');
     this.activeTask = taskID;
     return await this.save();
 }
 
-playerSchema.methods.taskDone = async (status) => {
+playerSchema.methods.taskDone = async function (status) {
     if (!this.activeTask) throw new Error('Player has no active task');
 
     let taskId = this.activeTask;
@@ -97,6 +108,19 @@ playerSchema.methods.taskDone = async (status) => {
     return await this.save();
 }
 
+playerSchema.methods.getCover = async function () {
+    return await avatarsDB.getByIdForSend(this.avatar);
+}
+
+playerSchema.methods.setPosition = async function (latitude, longitude) {
+    this.position = {
+        latitude,
+        longitude
+    }
+    this.lastSeenOnline = new Date();
+    await this.save();
+}
+
 const Player = mongoose.model("Player", playerSchema);
 
 async function create(login, password, avatar) {
@@ -106,8 +130,7 @@ async function create(login, password, avatar) {
     let player = new Player({
         login,
         password,
-        avatar: await avatarsDB.create(avatar.name, avatar.data, avatar.mimetype),
-        lastSeenOnline: new Date()
+        avatar: await avatarsDB.create(avatar.name, avatar.data, avatar.mimetype)
     })
 
     return await player.save();
@@ -125,6 +148,10 @@ async function getByLogin(login) {
     return await Player.findOne({ login }).exec();
 }
 
+async function getOnlinePlayers() {
+    return await Player.find({ online: true }).exec();
+}
+
 async function removeById(id) {
     let player = await Player.findById(id).exec();
     await avatarsDB.removeById(player.avatar);
@@ -136,5 +163,27 @@ module.exports = {
     getAll,
     getById,
     getByLogin,
+    getOnlinePlayers,
     removeById
 }
+
+setTimeout(async function check(timerId) {
+    let players = await getAll();
+
+    for(let player of players){
+        if(new Date() - player.lastSeenOnline < 10000) {
+            if(!player.online) {
+                player.online = true;
+                await player.save();
+            }
+        }
+        else {
+            if(player.online){
+                player.online = false;
+                await player.save();
+            }
+        }
+    }
+
+    setTimeout(check, 10000);
+}, 10000);

@@ -40,37 +40,41 @@ const watcherSchema = new Schema({
     lastSeenOnline: Date,
 });
 
-watcherSchema.methods.changeLogin = async (newLogin) => {
+watcherSchema.methods.changeLogin = async function (newLogin) {
     this.login = newLogin;
     return await this.save();
 }
 
-watcherSchema.methods.changePassword = async (newPassword) => {
+watcherSchema.methods.changePassword = async function (newPassword) {
     this.password = newPassword;
     return await this.save();
 }
 
-watcherSchema.methods.updatePosition = async (position) => {
+watcherSchema.methods.updatePosition = async function (position) {
     this.position = position;
     this.lastSeenOnline = new Date();
     return await this.save();
 }
 
-watcherSchema.methods.addFavoritePlayer = async (playerId) => {
+watcherSchema.methods.addFavoritePlayer = async function (playerId) {
     this.favoritePlayers.push(playerId);
     return await this.save();
 }
 
-watcherSchema.methods.removeFavoritePlayer = async (playerId) => {
+watcherSchema.methods.removeFavoritePlayer = async function (playerId) {
     let index = this.favoritePlayers.indexOf(playerId);
     if(~index) throw new Error('User is not favorite');
     this.favoritePlayers.splice(index, 1);
     return await this.save();
 }
 
-watcherSchema.methods.addCreatedTask = async (taskId) => {
+watcherSchema.methods.addCreatedTask = async function (taskId) {
     this.createdTasks.push(taskId);
     return await this.save();
+}
+
+watcherSchema.methods.getCover = async function () {
+    return await avatarsDB.getByIdForSend(this.avatar);
 }
 
 const Watcher = mongoose.model('Watcher', watcherSchema);

@@ -3,6 +3,7 @@ import { Switch, Route, Link, Redirect } from 'react-router-dom'
 import auth from './auth'
 import LoginWindow from './views/Login'
 import RegisterWindow from './views/Register'
+import UserInterface from './views/UserInterface'
 
 export default class App extends React.Component {
 
@@ -10,10 +11,10 @@ export default class App extends React.Component {
         return (
             <Switch>
                 <Route exact path='/login' component={LoginWindow} />
-                <Route exact path='/resgister' component={RegisterWindow} />
+                <Route exact path='/register' component={RegisterWindow} />
                 <Route path='/' render={() => {
                     if (auth.isAuthorized()) return (
-                        <span>authorized {localStorage.getItem('token')}</span>
+                        <UserInterface />
                     );
                     else return (
                         <Redirect to='/login' />

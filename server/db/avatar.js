@@ -40,9 +40,16 @@ async function removeById(id) {
     return await Avatar.findByIdAndRemove(id).exec();
 }
 
+async function getByIdForSend(id){
+    let avatars = await Avatar.find();
+
+    let avatar = await Avatar.findById(id).exec();
+    return avatar.buffer;
+}
 
 module.exports = {
     create,
     getById,
     removeById,
+    getByIdForSend
 };

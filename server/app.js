@@ -13,6 +13,9 @@ const express = require('express'),
 const playerDB = require('./db/player'),
     watcherDB = require('./db/watcher');
 
+const playerRoute = require('./routes/player'),
+    watcherRoute = require('./routes/watcher');
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -21,18 +24,28 @@ app.use(passport.initialize());
 
 passport.use(new BearerStrategy(async (token, done) => {
     jwt.verify(token, process.env.SERVER_SECRET, async (error, decoded, info) => {
-        if(error) return done(error);
+        if (error) return done(error);
 
         let { login, role } = decoded;
-        useDB = role == 'player' ? playerDB : watcherDB;
+        let userDB = role == 'player' ? playerDB : watcherDB;
         try {
             let user = await userDB.getByLogin(login);
+            user.role = role;
             return done(null, user);
         } catch (error) {
             return done(error)
         }
     });
 }));
+
+app.get('/:role/:login/cover', async (req, res, next) => {
+    let userDB = req.params.role == 'player' ? playerDB : watcherDB;
+
+    let user = await userDB.getByLogin(req.params.login);
+    if (!user) return next(new Error('No such user'));
+
+    res.send(await user.getCover());
+})
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -59,7 +72,7 @@ app.post('/register', async (req, res, next) => {
 app.post('/login', async (req, res, next) => {
     let { login, password, role } = req.body;
 
-    let userDB = role === 'player' ? playerDB : userDB;
+    let userDB = role === 'player' ? playerDB : watcherDB;
 
     try {
         let user = await userDB.getByLogin(login);
@@ -83,15 +96,38 @@ app.post('/login', async (req, res, next) => {
 });
 
 app.post('/verify', async (req, res, next) => {
-    passport.authenticate('bearer', {session: false}, (error, user, unfo) => {
-        if(error) return next(error);
-        console.log('here');
+    passport.authenticate('bearer', { session: false }, (error, user, info) => {
+        if (error) return next(error);
         return res.json({
             login: user.login,
             role: user.role
         })
     })(req, res, next);
-})
+});
+
+app.use('/player',
+    (req, res, next) => {
+        passport.authenticate('bearer', { session: false }, (error, user, info) => {
+            if (error) return next(error);
+            req.logIn(user, { session: false }, (error) => {
+                if (error) return next(error);
+                return next();
+            })
+        })(req, res, next);
+    },
+    playerRoute);
+
+// app.use('/watcher',
+//     (req, res, next) => {
+//         passport.authenticate('bearer', { session: false }, (error, user, info) => {
+//             if (error) return next(error);
+//             req.logIn(user, { session: false }, (error) => {
+//                 if (error) return next(error);
+//                 return next();
+//             })
+//         })(req, res, next);
+//     },
+//     watcherRoute);
 
 app.use((error, req, res, next) => {
     return res.status(500).json({
