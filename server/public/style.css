@@ -22,6 +22,18 @@
   width: 100%;
   height: 100%;
   min-height: 100%; }
+  .GoogleMap .Avatar {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: -15px;
+    left: -15px; }
+    .GoogleMap .Avatar :hover {
+      background-color: black; }
+      .GoogleMap .Avatar :hover ::before {
+        display: block;
+        position: absolute;
+        content: attr("key"); }
 .Interface {
   position: relative;
   top: 0;

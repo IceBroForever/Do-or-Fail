@@ -1,7 +1,9 @@
 require('dotenv').config();
 
 const express = require('express'),
+    http = require('http'),
     app = express(),
+    server = http.createServer(app),
     path = require('path'),
     passport = require('passport'),
     BearerStrategy = require('passport-http-bearer'),
@@ -46,10 +48,6 @@ app.get('/:role/:login/cover', async (req, res, next) => {
 
     res.send(await user.getCover());
 })
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 app.post('/register', async (req, res, next) => {
     let { login, password, role } = req.body;
@@ -117,17 +115,21 @@ app.use('/player',
     },
     playerRoute);
 
-// app.use('/watcher',
-//     (req, res, next) => {
-//         passport.authenticate('bearer', { session: false }, (error, user, info) => {
-//             if (error) return next(error);
-//             req.logIn(user, { session: false }, (error) => {
-//                 if (error) return next(error);
-//                 return next();
-//             })
-//         })(req, res, next);
-//     },
-//     watcherRoute);
+app.use('/watcher',
+    (req, res, next) => {
+        passport.authenticate('bearer', { session: false }, (error, user, info) => {
+            if (error) return next(error);
+            req.logIn(user, { session: false }, (error) => {
+                if (error) return next(error);
+                return next();
+            })
+        })(req, res, next);
+    },
+    watcherRoute);
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.use((error, req, res, next) => {
     return res.status(500).json({
@@ -135,7 +137,7 @@ app.use((error, req, res, next) => {
     });
 })
 
-app.listen(process.env.PORT || 4000);
+server.listen(process.env.PORT || 4000);
 
 function sha512(password) {
     const hash = crypto.createHmac('sha512', process.env.SERVER_SALT);
