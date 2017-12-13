@@ -10,13 +10,16 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     busboy = require('busboy-body-parser'),
     crypto = require('crypto'),
-    jwt = require('jsonwebtoken');
+    jwt = require('jsonwebtoken'),
+    Url = require('url');
 
 const playerDB = require('./db/player'),
     watcherDB = require('./db/watcher');
 
 const playerRoute = require('./routes/player'),
     watcherRoute = require('./routes/watcher');
+
+const GameSession = require('./src//GameSession');
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -136,6 +139,27 @@ app.use((error, req, res, next) => {
         error: error.message
     });
 })
+
+let gameSessions = {};
+
+server.on('upgrade', (req, socket, head) => {
+    let url = Url.parse(req.url, true);
+    let { login, role } = url.query;
+
+    let player = url.pathname.substr('/gamesession/'.length);
+
+    let gameSession = gameSessions[player];
+
+    if (!gameSession) {
+        if (role == 'player' && login == player)
+            gameSession = gameSessions[player] = new GameSession(player);
+        else return socket.close(500, 'Forbidden');
+    }
+
+    gameSession.server.handleUpgrade(req, socket, head, (webSocket) => {
+        gameSession.server.emit('connection', webSocket, req);
+    })
+});
 
 server.listen(process.env.PORT || 4000);
 
