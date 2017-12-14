@@ -1,0 +1,32 @@
+$width: 25cm;
+$height: 15cm;
+
+.Dialog {
+    min-width: $width !important;
+    max-width: $width !important;
+    width: $width !important;
+    min-height: $height !important;
+    max-height: $height !important;
+    height: $height !important;
+
+    & > *:first-child {
+        display: flex;
+        flex-direction: column;
+        min-width: inherit !important;
+        max-width: inherit !important;
+        width: inherit !important;
+        min-height: inherit !important;
+        max-height: inherit !important;
+        height: inherit !important;
+    }
+
+    .Container {
+        width: 100% !important;
+        flex: 1 !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+    }
+}

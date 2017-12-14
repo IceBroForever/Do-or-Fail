@@ -1,18 +1,6 @@
-const GameSession = require('./GameSession');
+const GameSessions = require('./GameSessions');
 
-let GameSessions = {};
-
-GameSessions.prototype.getPlayerGameSession = function (login) {
-    return this[login];
-}
-
-GameSessions.prototype.createPlayerGameSession = function (login) {
-    this[login] = new GameSession(login);
-}
-
-GameSessions.prototype.deletePlayerGameSession = function (login) {
-    delete this[login];
-}
+let gameSessions = new GameSessions();
 
 module.exports = function (server) {
     server.on('upgrade', (req, socket, head) => {

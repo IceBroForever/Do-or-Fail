@@ -4,11 +4,11 @@ const express = require('express'),
 const playerDB = require('../db/player');
 
 router.post('/:login/updatePosition', async (req, res, next) => {
-    try{
+    try {
         let player = req.user;
-        if(player.login != req.params.login) throw new Error('Forbidden');
-        
-        let{ latitude, longitude } = req.body;
+        if (player.login != req.params.login) throw new Error('Forbidden');
+
+        let { latitude, longitude } = req.body;
 
         await player.setPosition(latitude, longitude);
 
@@ -18,6 +18,16 @@ router.post('/:login/updatePosition', async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
+});
+
+router.get('/:login', async (req, res, next) => {
+    try {
+        let player = await playerDB.getByLogin(req.params.login);
+
+        return res.json(player.getInfoForSend());
+    } catch (error) {
+        return next(error);
+    };
 });
 
 module.exports = router;

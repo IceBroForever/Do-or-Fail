@@ -44,10 +44,6 @@ const playerSchema = new Schema({
         type: Date,
         default: null
     },
-    timerId: {
-        type: String,
-        default: ''
-    },
     position: {
         latitude: {
             type: Number,
@@ -119,6 +115,18 @@ playerSchema.methods.setPosition = async function (latitude, longitude) {
     }
     this.lastSeenOnline = new Date();
     await this.save();
+}
+
+playerSchema.methods.getInfoForSend = function () {
+    return {
+        login: this.login,
+        position: {
+            latitude: this.position.latitude,
+            longitude: this.position.longitude
+        },
+        isOnline: this.online,
+        lastSeenOnline: this.lastSeenOnline
+    };
 }
 
 const Player = mongoose.model("Player", playerSchema);

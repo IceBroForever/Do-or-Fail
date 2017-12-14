@@ -62,7 +62,7 @@ export default class GoogleMap extends React.Component {
                 zoom={this.state.zoom}
                 hoverDistance={15}
                 distanceToMouse={this.distanceToMouse}
-                onChildClick={this.props.onPlayerMarkerClick}
+                onChildClick={this.props.onChildClick}
             >
                 {this.props.children}
             </Map>

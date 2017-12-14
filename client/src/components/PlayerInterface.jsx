@@ -1,5 +1,6 @@
 import React from 'react'
 import auth from '../auth'
+import VideoStreamer from './VideoStreamer'
 
 export default class PlayerInterface extends React.Component {
 
@@ -10,8 +11,15 @@ export default class PlayerInterface extends React.Component {
         this.sendPositionInfo = this.sendPositionInfo.bind(this);
 
         this.state = {
-            timerId: setInterval(this.sendPositionInfo, 5000)
+            timerId: setInterval(this.sendPositionInfo, 5000),
+            stream: null
         };
+
+        this.streamGenerated = this.streamGenerated.bind(this);
+    }
+
+    streamGenerated(stream) {
+        console.log('generated');
     }
 
     async sendPositionInfo() {
@@ -53,7 +61,7 @@ export default class PlayerInterface extends React.Component {
 
     render() {
         return (
-            <span>Player</span>
+            <VideoStreamer streamGenerated={this.streamGenerated} />
         );
     }
 

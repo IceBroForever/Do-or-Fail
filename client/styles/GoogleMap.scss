@@ -12,5 +12,6 @@ $avatarSize: 30px;
         height: $avatarSize;
         top: -$avatarSize / 2;
         left: -$avatarSize / 2;
+        border-radius: $avatarSize / 2;
     }
 }
