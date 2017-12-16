@@ -7,7 +7,7 @@ GameSessions.prototype.getPlayerGameSession = function (login) {
 }
 
 GameSessions.prototype.createPlayerGameSession = function (login) {
-    this[login] = new GameSession(login);
+    this[login] = new GameSession(login, this.deletePlayerGameSession.bind(this, login));
 }
 
 GameSessions.prototype.deletePlayerGameSession = function (login) {

@@ -21,5 +21,24 @@ $headerSize: 1.5cm;
         align-items: center;
         width: 100%;
         height: calc(100% - #{$headerSize});
+
+        .CardWrapper {
+            display: block;
+            width: 25cm;
+            height: 15cm;
+
+            & > *:first-child > *:first-child {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+
+                & > * {
+                    width: 100%;
+                }
+            }
+        }
     }
 }

@@ -223,8 +223,7 @@ export default class RegisterWindow extends React.Component {
                             label='Register'
                             onClick={this.handleSubmit}
                         />
-                        <RaisedButton
-                            secondary={true}
+                        <FlatButton
                             label='Log in'
                             href='/login'
                         />

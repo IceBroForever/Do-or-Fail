@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom'
 import { Card, CardTitle, CardText, CardActions } from 'material-ui/Card'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import FlatButton from 'material-ui/FlatButton'
 import CheckBox from 'material-ui/Checkbox'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton';
 import Visibility from 'material-ui/svg-icons/action/visibility';
@@ -170,8 +171,7 @@ export default class LoginWindow extends React.Component {
                             label='Log in'
                             onClick={this.handleSubmit}
                         />
-                        <RaisedButton
-                            secondary={true}
+                        <FlatButton
                             label='Register'
                             href='/register'
                         />

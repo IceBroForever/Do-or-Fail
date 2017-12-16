@@ -4,6 +4,7 @@ import auth from '../auth'
 import Avatar from 'material-ui/Avatar'
 import Dialog from 'material-ui/Dialog'
 import PlayerProfile from './PlayerProfile'
+import GameSession from './GameSessionForWatcher'
 
 import '../../styles/Interface.scss'
 import '../../styles/GoogleMap.scss'
@@ -28,6 +29,7 @@ export default class WatcherInterface extends React.Component {
         this.getPlayersOnline = this.getPlayersOnline.bind(this);
         this.getPlayersMarkers = this.getPlayersMarkers.bind(this);
         this.onPlayerAvatarClicked = this.onPlayerAvatarClicked.bind(this);
+        this.backToMap = this.backToMap.bind(this);
 
         this.timerId = setTimeout(this.getPlayersOnline, 5000);
     }
@@ -52,19 +54,6 @@ export default class WatcherInterface extends React.Component {
     }
 
     async onPlayerAvatarClicked(login, avatarProps) {
-        // let selectedPlayer;
-
-        // try {
-        //     let responce = await auth.request({
-        //         method: 'GET',
-        //         url: '/player/' + login
-        //     });
-
-        //     selectedPlayer = responce.data;
-        // } catch (error) {
-        //     selectedPlayer = null;
-        // }
-
         this.setState({
             status: statuses.PLAYER_SELECTED,
             selectedPlayer: login
@@ -94,7 +83,16 @@ export default class WatcherInterface extends React.Component {
         return playersMarkers;
     }
 
+    backToMap() {
+        this.setState({
+            status: statuses.ON_MAP,
+            selectedPlayer: null
+        });
+    }
 
+    componentWillUnmount(){
+        clearTimeout(this.timerId);
+    }
 
     render() {
 
@@ -111,7 +109,15 @@ export default class WatcherInterface extends React.Component {
                         {this.getPlayersMarkers()}
                     </GoogleMap>
                 </div>
-                <PlayerProfile player={this.state.selectedPlayer} />
+                <PlayerProfile
+                    player={this.state.selectedPlayer}
+                    backToMapClicked={this.backToMap}
+                    // connectToGameSession={}
+                />
+                <GameSession
+                    player={this.state.selectedPlayer}
+                    open={this.state.status == statuses.IN_SESSION}
+                />
             </div>
         );
     }

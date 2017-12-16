@@ -25,8 +25,8 @@ function GameSession(playerLogin, deleteCallback) {
 
     this.server = new WebSocket.Server({
         noServer: true,
-        verifyClient: () => {
-            return this.verifyClient();
+        verifyClient: (info) => {
+            return this.verifyClient(info);
         }
     });
 
@@ -58,7 +58,7 @@ GameSession.prototype.verifyClient = function (info) {
     return true;
 }
 
-GameSession.prototype.handleUpdate = function (req, socket, head) {
+GameSession.prototype.handleUpgrade = function (req, socket, head) {
     this.server.handleUpgrade(req, socket, head, (webSocket) => {
         this.server.emit('connection', webSocket, req);
     });
@@ -85,14 +85,14 @@ GameSession.prototype.broadcast = function (data) {
 }
 
 GameSession.prototype.handleMessage = function (login, message) {
-    this.broadcast({
+    this.broadcast(JSON.stringify({
         type: 'message',
         sender: login,
         message
-    });
+    }));
 }
 
-GameSession.prototype.watcherConnected = function(login, socket){
+GameSession.prototype.watcherConnected = function (login, socket) {
     this.watchers[login] = socket;
 
     this.broadcast({
@@ -101,7 +101,7 @@ GameSession.prototype.watcherConnected = function(login, socket){
     });
 }
 
-GameSession.prototype.watcherDisconnected = function(login) {
+GameSession.prototype.watcherDisconnected = function (login) {
     delete this.watchers[login];
 
     this.broadcast({
@@ -112,18 +112,20 @@ GameSession.prototype.watcherDisconnected = function(login) {
 
 GameSession.prototype.handlePlayerConnection = function (socket, login) {
     socket.on('message', data => {
+        data = JSON.parse(data);
+
         let { type } = data;
 
-        switch(type) {
+        switch (type) {
             case 'message': {
                 this.handleMessage(this.player.login, data.message);
-            }break;
+            } break;
             case 'description': {
                 this.player.streamDescription = data.description;
-            }break;
+            } break;
             case 'ice-candidate': {
                 this.player.streamIceCandidates.push(data.iceCandidate);
-            }break;
+            } break;
         };
     });
 
@@ -133,20 +135,21 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
 
     this.player.socket = socket;
 
-    socket.send({
-        type: 'get-description'
-    });
+    socket.send(JSON.stringify({
+        type: 'ok'
+    }));
 }
 
 GameSession.prototype.handleWatcherConnection = function (socket, login) {
 
     socket.on('message', data => {
-        let {type} = data;
+        data = JSON.parse(data);
+        let { type } = data;
 
-        switch(type){
+        switch (type) {
             case 'message': {
                 this.handleMessage(login, data.message);
-            }break;
+            } break;
         };
     });
 
@@ -156,15 +159,15 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
 
     this.watcherConnected(login, socket);
 
-    socket.send({
-        type: 'stream-stuff',
+    socket.send(JSON.stringify({
+        type: 'stream-staff',
         description: this.player.streamDescription,
         iceCandidates: this.player.streamIceCandidates
-    });
+    }));
 }
 
-GameSession.prototype.closeSession = function() {
-    this.server.close(() => this.deleteCallback);
+GameSession.prototype.closeSession = function () {
+    this.server.close(() => this.deleteCallback());
 }
 
 module.exports = GameSession;

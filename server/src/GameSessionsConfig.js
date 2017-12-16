@@ -1,20 +1,24 @@
-const GameSessions = require('./GameSessions');
+const GameSessions = require('./GameSessions'),
+    GameSession = require('./GameSession'),
+    Url = require('url');
 
 let gameSessions = new GameSessions();
 
-module.exports = function (server) {
+setInterval(() => {console.dir(gameSessions); console.log('///////')}, 5000);
+
+module.exports = (server) => {
     server.on('upgrade', (req, socket, head) => {
         let url = Url.parse(req.url, true);
         let { login, role } = url.query;
 
         let player = url.pathname.substr('/gamesession/'.length);
 
-        let gameSession = GameSessions.getPlayerGameSession(login);
+        let gameSession = gameSessions.getPlayerGameSession(player);
 
         if (!gameSession) {
             if (role == 'player' && login == player) {
-                GameSessions.createPlayerGameSession(login);
-                gameSession = GameSessions.getPlayerGameSession(login);
+                gameSessions.createPlayerGameSession(player);
+                gameSession = gameSessions.getPlayerGameSession(player);
             }
             else return socket.close(500, 'Forbidden');
         }

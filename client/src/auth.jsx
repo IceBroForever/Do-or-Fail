@@ -13,6 +13,10 @@ export default class auth {
         return localStorage.getItem('role');
     }
 
+    static getToken() {
+        return localStorage.getItem('token');
+    }
+
     static async verifyAuthorization() {
         localStorage.setItem('isAuthorized', false);
         try {
@@ -99,16 +103,5 @@ export default class auth {
         } catch (error) {
             throw error.response.data.error;
         }
-    }
-
-    static generateDataForWebSocketRequest(data){
-        let request = {
-            login: localStorage.getItem('login'),
-            token: localStorage.getItem('token')
-        }
-
-        for(let key in data) request[key] = data[key];
-
-        return request;
     }
 }
