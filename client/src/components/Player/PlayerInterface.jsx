@@ -1,11 +1,12 @@
 import React from 'react'
-import auth from '../auth'
+import auth from '../../auth'
 import { Card, CardActions } from 'material-ui/Card'
 import GameSession from './GameSessionForPlayer'
 import FlatButton from 'material-ui/FlatButton'
 import PlayerProfile from './PlayerProfile'
 
-import '../../styles/Interface.scss'
+import '../../../styles/Interface.scss'
+import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 
 export default class PlayerInterface extends React.Component {
 
@@ -77,6 +78,15 @@ export default class PlayerInterface extends React.Component {
     }
 
     render() {
+
+        let actions = (
+            <RaisedButton
+                label='Back to session'
+                onClick={this.closeProfile}
+                primary={true}
+            />
+        );
+
         return (
             <div className='UserInterface'>
                 <div className='CardWrapper'>
@@ -101,8 +111,9 @@ export default class PlayerInterface extends React.Component {
                     </Card>
                 </div>
                 <PlayerProfile
-                    player={this.state.showProfile ? auth.getLogin() : null}
-                    backToMapClicked={this.closeProfile}
+                    show={this.state.showProfile}
+                    player={auth.getLogin()}
+                    actions={actions}
                 />
             </div>
         );

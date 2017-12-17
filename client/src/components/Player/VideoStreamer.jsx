@@ -39,6 +39,8 @@ export default class VideoStreamer extends React.Component {
             <CircularProgress />
         );
 
+        console.dir(this.state.stream);
+
         return (
             <video src={URL.createObjectURL(this.state.stream)} autoPlay={true}/>
         );

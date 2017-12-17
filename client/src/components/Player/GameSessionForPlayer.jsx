@@ -1,8 +1,8 @@
 import React from 'react'
-import auth from '../auth'
+import auth from '../../auth'
 import VideoStreamer from './VideoStreamer'
 
-import '../../styles/GameSession.scss'
+import '../../../styles/GameSession.scss'
 
 export default class GameSessionForPlayer extends React.Component {
 
@@ -46,6 +46,7 @@ export default class GameSessionForPlayer extends React.Component {
         this.pc = new RTCPeerConnection();
 
         this.pc.onicecandidate = (event) => {
+            console.log(event.candidate);
             this.sendIceCandidate(event.candidate);
         }
 
@@ -53,7 +54,7 @@ export default class GameSessionForPlayer extends React.Component {
 
         let description = await this.pc.createOffer();
         await this.pc.setLocalDescription(description);
-
+        console.log(description);
         this.socket.send(JSON.stringify({
             type: 'description',
             description

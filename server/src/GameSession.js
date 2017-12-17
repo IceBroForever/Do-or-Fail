@@ -68,17 +68,19 @@ GameSession.prototype.handleConnection = function (socket, req) {
     let url = Url.parse(req.url, true);
     let { login, role } = url.query;
 
+    console.log(login);
+
     if (role == 'player') {
         if (login == this.player.login) this.handlePlayerConnection(socket, login);
         else socket.terminate();
     } else {
-        handleWatcherConnection(socket, login);
+        this.handleWatcherConnection(socket, login);
     }
 }
 
 GameSession.prototype.broadcast = function (data) {
-    for (let watcher of this.watchers) {
-        watcher.socket.send(data);
+    for (let watcher in this.watchers) {
+        this.watchers[watcher].send(data);
     }
 
     this.player.socket.send(data);
@@ -95,19 +97,19 @@ GameSession.prototype.handleMessage = function (login, message) {
 GameSession.prototype.watcherConnected = function (login, socket) {
     this.watchers[login] = socket;
 
-    this.broadcast({
+    this.broadcast(JSON.stringify({
         type: 'watcher-connected',
         login
-    });
+    }));
 }
 
 GameSession.prototype.watcherDisconnected = function (login) {
     delete this.watchers[login];
 
-    this.broadcast({
+    this.broadcast(JSON.stringify({
         type: 'watcher-disconnected',
         login
-    });
+    }));
 }
 
 GameSession.prototype.handlePlayerConnection = function (socket, login) {

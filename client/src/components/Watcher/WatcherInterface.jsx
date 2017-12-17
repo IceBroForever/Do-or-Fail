@@ -1,13 +1,15 @@
 import React from 'react'
-import GoogleMap from '../components/GoogleMap'
-import auth from '../auth'
+import GoogleMap from './GoogleMap'
+import auth from '../../auth'
 import Avatar from 'material-ui/Avatar'
 import Dialog from 'material-ui/Dialog'
-import PlayerProfile from './PlayerProfile'
+import PlayerProfile from '../Player/PlayerProfile'
 import GameSession from './GameSessionForWatcher'
 
-import '../../styles/Interface.scss'
-import '../../styles/GoogleMap.scss'
+import '../../../styles/Interface.scss'
+import '../../../styles/GoogleMap.scss'
+import FlatButton from 'material-ui/FlatButton/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 
 const statuses = {
     ON_MAP: 'ON_MAP',
@@ -30,6 +32,7 @@ export default class WatcherInterface extends React.Component {
         this.getPlayersMarkers = this.getPlayersMarkers.bind(this);
         this.onPlayerAvatarClicked = this.onPlayerAvatarClicked.bind(this);
         this.backToMap = this.backToMap.bind(this);
+        this.connectToGameSession = this.connectToGameSession.bind(this);
 
         this.timerId = setTimeout(this.getPlayersOnline, 5000);
     }
@@ -90,15 +93,40 @@ export default class WatcherInterface extends React.Component {
         });
     }
 
-    componentWillUnmount(){
+    connectToGameSession() {
+        this.setState({
+            status: statuses.IN_SESSION
+        });
+    }
+
+    componentWillUnmount() {
         clearTimeout(this.timerId);
     }
 
     render() {
 
-        if (this.state.status == statuses.PLAYER_SELECTED) {
+        let actionsForProfile = (
+            [
+                <FlatButton
+                    label='Back to map'
+                    onClick={this.backToMap}
+                />,
+                <RaisedButton
+                    label='Connect to game session'
+                    primary={true}
+                    onClick={this.connectToGameSession}
+                />
+            ]
+        );
 
-        }
+        let actionForSession = (
+            [
+                <FlatButton
+                    label='Disconnect'
+                    onClick={this.backToMap}
+                />
+            ]
+        );
 
         return (
             <div className='UserInterface'>
@@ -110,13 +138,15 @@ export default class WatcherInterface extends React.Component {
                     </GoogleMap>
                 </div>
                 <PlayerProfile
+                    show={this.state.status == statuses.PLAYER_SELECTED}
                     player={this.state.selectedPlayer}
-                    backToMapClicked={this.backToMap}
-                    // connectToGameSession={}
+                    actions={actionsForProfile}
+                // connectToGameSession={}
                 />
                 <GameSession
                     player={this.state.selectedPlayer}
-                    open={this.state.status == statuses.IN_SESSION}
+                    show={this.state.status == statuses.IN_SESSION}
+                    actions={actionForSession}
                 />
             </div>
         );

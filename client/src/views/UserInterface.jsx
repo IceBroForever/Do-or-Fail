@@ -1,8 +1,8 @@
 import React from 'react'
 import auth from '../auth'
 import Header from '../components/Header'
-import PlayerInterface from '../components/PlayerInterface'
-import WatcherInterface from '../components/WatcherInterface'
+import PlayerInterface from '../components/Player/PlayerInterface'
+import WatcherInterface from '../components/Watcher/WatcherInterface'
 
 import '../../styles/Interface.scss'
 

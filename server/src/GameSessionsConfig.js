@@ -4,7 +4,7 @@ const GameSessions = require('./GameSessions'),
 
 let gameSessions = new GameSessions();
 
-setInterval(() => {console.dir(gameSessions); console.log('///////')}, 5000);
+// setInterval(() => {console.dir(gameSessions); console.log('///////')}, 5000);
 
 module.exports = (server) => {
     server.on('upgrade', (req, socket, head) => {
@@ -20,7 +20,7 @@ module.exports = (server) => {
                 gameSessions.createPlayerGameSession(player);
                 gameSession = gameSessions.getPlayerGameSession(player);
             }
-            else return socket.close(500, 'Forbidden');
+            else return socket.destroy();
         }
 
         gameSession.handleUpgrade(req, socket, head);

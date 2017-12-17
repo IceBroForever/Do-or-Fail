@@ -1,4 +1,5 @@
 import React from 'react'
+import CircularProgress from 'material-ui/CircularProgress'
 
 export default class VideoReceiver extends React.Component {
 
@@ -11,11 +12,10 @@ export default class VideoReceiver extends React.Component {
     }
 
     componentWillReceiveProps(newProps) {
-        if(newProps.stream) {
+        if (!this.state.stream)
             this.setState({
-                stream: newProps.stream
+                stream: URL.createObjectURL(newProps.stream)
             });
-        }
     }
 
     render() {
@@ -24,7 +24,7 @@ export default class VideoReceiver extends React.Component {
         );
 
         return (
-            <video src={URL.createObjectURL(this.state.stream)} autoPlay={true}/>
+            <video src={this.state.stream} autoPlay={true} />
         );
     }
 

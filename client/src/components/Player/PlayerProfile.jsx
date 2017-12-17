@@ -2,9 +2,9 @@ import React from 'react'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import auth from '../auth'
+import auth from '../../auth'
 
-import '../../styles/PlayerProfile.scss'
+import '../../../styles/PlayerProfile.scss'
 
 export default class PlayerProfile extends React.Component {
 
@@ -13,6 +13,7 @@ export default class PlayerProfile extends React.Component {
 
         this.state = {
             player: null,
+            show: false
         };
 
         this.getPlayerInfo = this.getPlayerInfo.bind(this);
@@ -28,8 +29,9 @@ export default class PlayerProfile extends React.Component {
     }
 
     async componentWillReceiveProps(newProps) {
-        if (!newProps.player) {
+        if (!newProps.show) {
             return this.setState({
+                show: false,
                 player: null
             });
         }
@@ -43,35 +45,24 @@ export default class PlayerProfile extends React.Component {
         }
 
         this.setState({
+            show: true,
             player
         })
     }
 
     render() {
-        let open = this.state.player != null;
 
         let isOnline;
-        if (open) {
+        if (this.state.show) {
             isOnline = this.state.player.isOnline;
         }
 
         return (
             <Dialog
-                open={open}
+                open={this.state.show}
                 contentClassName='Dialog'
                 bodyClassName='Container'
-                actions={[
-                    <FlatButton
-                        label='Back to map'
-                        onClick={this.props.backToMapClicked}
-                    />,
-                    <RaisedButton
-                        label='Connect to game session'
-                        onClick={this.props.connectToGameSession}
-                        disabled={!isOnline}
-                        primary={true}
-                    />
-                ]}
+                actions={this.props.actions}
             >
                 TODO: Player profile
             </Dialog>

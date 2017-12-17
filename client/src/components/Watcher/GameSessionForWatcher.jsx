@@ -1,9 +1,10 @@
 import React from 'react'
-import auth from '../auth'
+import auth from '../../auth'
+import Dialog from 'material-ui/Dialog'
 import VideoReceiver from './VideoReceiver'
 
-import '../../styles/Dialog.scss'
-import '../../styles/GameSession.scss'
+import '../../../styles/Dialog.scss'
+import '../../../styles/GameSession.scss'
 
 export default class GameSessionForWatcher extends React.Component {
 
@@ -11,20 +12,42 @@ export default class GameSessionForWatcher extends React.Component {
         super(props);
 
         this.createSocket = this.createSocket.bind(this);
+        this.destroyConnections = this.destroyConnections.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
         this.handleStreamStaff = this.handleStreamStaff.bind(this);
 
         this.state = {
-            stream: null
+            stream: null,
+            show: false
         };
-
-        this.socket = this.createSocket();
-        this.pc = null;
     }
 
-    createSocket() {
+    componentWillReceiveProps(newProps) {
+
+        if(!newProps.show) {
+            this.destroyConnections();
+        } else {
+            if(!this.socket) this.socket = this.createSocket(newProps.player);
+        }
+
+        this.setState({
+            stream: newProps.show ? this.state.stream : null,
+            show: newProps.show
+        });
+    }
+
+    componentWillUnmount() {
+        this.destroyConnections();
+
+        this.setState({
+            stream: null,
+            show: false
+        });
+    }
+
+    createSocket(player) {
         let url = 'ws://' + window.location.host +
-            '/gamesession/' + this.props.player +
+            '/gamesession/' + player +
             '?login=' + auth.getLogin() +
             '&role=' + auth.getRole() +
             '&token=' + auth.getToken();
@@ -42,6 +65,18 @@ export default class GameSessionForWatcher extends React.Component {
         return socket;
     }
 
+    async destroyConnections() {
+        if(this.socket) {
+            await this.socket.close();
+            this.socket = null;
+        }
+
+        if(this.pc) {
+            this.pc.close();
+            this.pc = null;
+        }
+    }
+
     handleMessage(data) {
         switch (data.type) {
             case 'stream-staff': {
@@ -50,34 +85,30 @@ export default class GameSessionForWatcher extends React.Component {
         }
     }
 
-    async handleStreamStaff(description, iceCandidates){
+    async handleStreamStaff(description, iceCandidates) {
         this.pc = new RTCPeerConnection();
 
-        this.pc.onaddstream = (stream) => {
+        this.pc.onaddstream = (event) => {
             this.setState({
-                stream
+                stream: event.stream
             });
         }
+        console.log(new RTCSessionDescription(description));
+        await this.pc.setRemoteDescription(new RTCSessionDescription(description));
 
-        await this.pc.setRemoteDescription(description);
-
-        for(let candidate of iceCandidates) {
-            this.pc.addIceCandidate(candidate);
+        for (let candidate of iceCandidates) {
+            if(candidate) this.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log(new RTCIceCandidate(candidate));
         }
     }
 
     render() {
         return (
             <Dialog
-                open={this.props.open}
+                open={this.state.show}
                 contentClassName='Dialog'
                 bodyClassName='Container'
-                actions={[
-                    <FlatButton
-                        label='Disconnect'
-                        onClick={this.props.onDisconnect}
-                    />
-                ]}
+                actions={this.props.actions}
             >
                 <div className='GameSession'>
                     <div className='Video'>
@@ -87,7 +118,7 @@ export default class GameSessionForWatcher extends React.Component {
                     </div>
                     <div className='Chat'>
                         chat
-                </div>
+                    </div>
                 </div>
             </Dialog>
         );
