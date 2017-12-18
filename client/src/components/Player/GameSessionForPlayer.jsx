@@ -12,14 +12,15 @@ export default class GameSessionForPlayer extends React.Component {
         this.createSocket = this.createSocket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
         this.streamReady = this.streamReady.bind(this);
-        this.sendIceCandidate = this.sendIceCandidate.bind(this);
+        this.handleWatcherConnection = this.handleWatcherConnection.bind(this);
 
         this.state = {
 
         };
 
         this.socket = this.createSocket();
-        this.pc = null;
+        this.pcs = {};
+        this.stream = null;
     }
 
     createSocket() {
@@ -42,30 +43,8 @@ export default class GameSessionForPlayer extends React.Component {
         return socket;
     }
 
-    async streamReady(stream) {
-        this.pc = new RTCPeerConnection();
-
-        this.pc.onicecandidate = (event) => {
-            console.log(event.candidate);
-            this.sendIceCandidate(event.candidate);
-        }
-
-        this.pc.addStream(stream);
-
-        let description = await this.pc.createOffer();
-        await this.pc.setLocalDescription(description);
-        console.log(description);
-        this.socket.send(JSON.stringify({
-            type: 'description',
-            description
-        }));
-    }
-
-    sendIceCandidate(iceCandidate) {
-        this.socket.send(JSON.stringify({
-            type: 'ice-candidate',
-            iceCandidate
-        }));
+    streamReady(stream) {
+        this.stream = stream;
     }
 
     handleMessage(data) {
@@ -73,7 +52,36 @@ export default class GameSessionForPlayer extends React.Component {
             case 'ok': {
                 console.log('Session created');
             } break;
+            case 'watcher-connected': {
+                this.handleWatcherConnection(data.login);
+            } break;
+            case 'answer': {
+                this.handleAnswer(data.login, data.description);
+            } break;
         }
+    }
+
+    async handleWatcherConnection(login) {console.log('here');
+        this.pcs[login] = new RTCPeerConnection();
+
+        let iceCandidates = [];
+        this.pcs[login].onicecandidate = (event) => {
+            if(event.candidate) iceCandidates.push(event.candidate);
+            else  this.socket.send(JSON.stringify({
+                type: 'offer',
+                login,
+                description,
+                iceCandidates
+            }));
+        }
+
+        this.pcs[login].addStream(this.stream);
+        let description = await this.pcs[login].createOffer();
+        await this.pcs[login].setLocalDescription(description);
+    }
+
+    async handleAnswer(login, description) {
+        await this.pcs[login].setRemoteDescription(description);
     }
 
     render() {

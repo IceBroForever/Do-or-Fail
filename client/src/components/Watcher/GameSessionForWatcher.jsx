@@ -20,6 +20,9 @@ export default class GameSessionForWatcher extends React.Component {
             stream: null,
             show: false
         };
+
+        this.socket = null;
+        this.pc = null;
     }
 
     componentWillReceiveProps(newProps) {
@@ -79,7 +82,7 @@ export default class GameSessionForWatcher extends React.Component {
 
     handleMessage(data) {
         switch (data.type) {
-            case 'stream-staff': {
+            case 'offer': {
                 this.handleStreamStaff(data.description, data.iceCandidates);
             } break;
         }
@@ -88,21 +91,29 @@ export default class GameSessionForWatcher extends React.Component {
     async handleStreamStaff(description, iceCandidates) {
         this.pc = new RTCPeerConnection();
 
-        this.pc.onaddstream = (event) => {
+        this.pc.onaddstream = async (event) => {
             this.setState({
                 stream: event.stream
             });
         }
-        console.log(new RTCSessionDescription(description));
-        await this.pc.setRemoteDescription(new RTCSessionDescription(description));
 
+        await this.pc.setRemoteDescription(new RTCSessionDescription(description));
+        
         for (let candidate of iceCandidates) {
             if(candidate) this.pc.addIceCandidate(new RTCIceCandidate(candidate));
-            console.log(new RTCIceCandidate(candidate));
         }
+
+        let answer = await this.pc.createAnswer();
+        await this.pc.setLocalDescription(answer);
+
+        this.socket.send(JSON.stringify({
+            type: 'answer',
+            description: answer
+        }));
     }
 
     render() {
+        console.log(this.state.stream);
         return (
             <Dialog
                 open={this.state.show}

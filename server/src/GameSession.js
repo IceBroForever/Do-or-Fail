@@ -14,9 +14,7 @@ const playerDB = require('../db/player'),
 function GameSession(playerLogin, deleteCallback) {
     this.player = {
         socket: null,
-        login: playerLogin,
-        streamDescription: null,
-        streamIceCandidates: []
+        login: playerLogin
     };
 
     this.watchers = {};
@@ -122,12 +120,10 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
             case 'message': {
                 this.handleMessage(this.player.login, data.message);
             } break;
-            case 'description': {
-                this.player.streamDescription = data.description;
-            } break;
-            case 'ice-candidate': {
-                this.player.streamIceCandidates.push(data.iceCandidate);
-            } break;
+            case 'offer': {
+                let { description, iceCandidates } = data;
+                this.sendStreamInfoToWatcher(data.login, description, iceCandidates);
+            }
         };
     });
 
@@ -142,6 +138,14 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
     }));
 }
 
+GameSession.prototype.sendStreamInfoToWatcher = function (login, description, iceCandidates) {
+    this.watchers[login].send(JSON.stringify({
+        type: 'offer',
+        description,
+        iceCandidates
+    }));
+}
+
 GameSession.prototype.handleWatcherConnection = function (socket, login) {
 
     socket.on('message', data => {
@@ -152,6 +156,9 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
             case 'message': {
                 this.handleMessage(login, data.message);
             } break;
+            case 'answer': {
+                this.sendStreamInfoToPlayer(login, data.description);
+            }
         };
     });
 
@@ -162,9 +169,15 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
     this.watcherConnected(login, socket);
 
     socket.send(JSON.stringify({
-        type: 'stream-staff',
-        description: this.player.streamDescription,
-        iceCandidates: this.player.streamIceCandidates
+        type: 'ok'
+    }));
+}
+
+GameSession.prototype.sendStreamInfoToPlayer = function (login, description) {
+    this.player.socket.send(JSON.stringify({
+        type: 'answer',
+        login,
+        description
     }));
 }
 

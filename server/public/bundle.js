@@ -44202,12 +44202,13 @@ var GameSessionForPlayer = function (_React$Component) {
         _this.createSocket = _this.createSocket.bind(_this);
         _this.handleMessage = _this.handleMessage.bind(_this);
         _this.streamReady = _this.streamReady.bind(_this);
-        _this.sendIceCandidate = _this.sendIceCandidate.bind(_this);
+        _this.handleWatcherConnection = _this.handleWatcherConnection.bind(_this);
 
         _this.state = {};
 
         _this.socket = _this.createSocket();
-        _this.pc = null;
+        _this.pcs = {};
+        _this.stream = null;
         return _this;
     }
 
@@ -44232,33 +44233,8 @@ var GameSessionForPlayer = function (_React$Component) {
         }
     }, {
         key: 'streamReady',
-        value: async function streamReady(stream) {
-            var _this3 = this;
-
-            this.pc = new RTCPeerConnection();
-
-            this.pc.onicecandidate = function (event) {
-                console.log(event.candidate);
-                _this3.sendIceCandidate(event.candidate);
-            };
-
-            this.pc.addStream(stream);
-
-            var description = await this.pc.createOffer();
-            await this.pc.setLocalDescription(description);
-            console.log(description);
-            this.socket.send(JSON.stringify({
-                type: 'description',
-                description: description
-            }));
-        }
-    }, {
-        key: 'sendIceCandidate',
-        value: function sendIceCandidate(iceCandidate) {
-            this.socket.send(JSON.stringify({
-                type: 'ice-candidate',
-                iceCandidate: iceCandidate
-            }));
+        value: function streamReady(stream) {
+            this.stream = stream;
         }
     }, {
         key: 'handleMessage',
@@ -44268,7 +44244,42 @@ var GameSessionForPlayer = function (_React$Component) {
                     {
                         console.log('Session created');
                     }break;
+                case 'watcher-connected':
+                    {
+                        this.handleWatcherConnection(data.login);
+                    }break;
+                case 'answer':
+                    {
+                        this.handleAnswer(data.login, data.description);
+                    }break;
             }
+        }
+    }, {
+        key: 'handleWatcherConnection',
+        value: async function handleWatcherConnection(login) {
+            var _this3 = this;
+
+            console.log('here');
+            this.pcs[login] = new RTCPeerConnection();
+
+            var iceCandidates = [];
+            this.pcs[login].onicecandidate = function (event) {
+                if (event.candidate) iceCandidates.push(event.candidate);else _this3.socket.send(JSON.stringify({
+                    type: 'offer',
+                    login: login,
+                    description: description,
+                    iceCandidates: iceCandidates
+                }));
+            };
+
+            this.pcs[login].addStream(this.stream);
+            var description = await this.pcs[login].createOffer();
+            await this.pcs[login].setLocalDescription(description);
+        }
+    }, {
+        key: 'handleAnswer',
+        value: async function handleAnswer(login, description) {
+            await this.pcs[login].setRemoteDescription(description);
         }
     }, {
         key: 'render',
@@ -48626,6 +48637,9 @@ var GameSessionForWatcher = function (_React$Component) {
             stream: null,
             show: false
         };
+
+        _this.socket = null;
+        _this.pc = null;
         return _this;
     }
 
@@ -48690,7 +48704,7 @@ var GameSessionForWatcher = function (_React$Component) {
         key: 'handleMessage',
         value: function handleMessage(data) {
             switch (data.type) {
-                case 'stream-staff':
+                case 'offer':
                     {
                         this.handleStreamStaff(data.description, data.iceCandidates);
                     }break;
@@ -48703,12 +48717,14 @@ var GameSessionForWatcher = function (_React$Component) {
 
             this.pc = new RTCPeerConnection();
 
-            this.pc.onaddstream = function (event) {
+            this.pc.onaddstream = async function (event) {
                 _this3.setState({
                     stream: event.stream
                 });
+
+                console.log('gere');
             };
-            console.log(new RTCSessionDescription(description));
+
             await this.pc.setRemoteDescription(new RTCSessionDescription(description));
 
             var _iteratorNormalCompletion = true;
@@ -48720,7 +48736,6 @@ var GameSessionForWatcher = function (_React$Component) {
                     var candidate = _step.value;
 
                     if (candidate) this.pc.addIceCandidate(new RTCIceCandidate(candidate));
-                    console.log(new RTCIceCandidate(candidate));
                 }
             } catch (err) {
                 _didIteratorError = true;
@@ -48736,10 +48751,19 @@ var GameSessionForWatcher = function (_React$Component) {
                     }
                 }
             }
+
+            var answer = await this.pc.createAnswer();
+            await this.pc.setLocalDescription(answer);
+
+            this.socket.send(JSON.stringify({
+                type: 'answer',
+                description: answer
+            }));
         }
     }, {
         key: 'render',
         value: function render() {
+            console.log(this.state.stream);
             return _react2.default.createElement(
                 _Dialog2.default,
                 {

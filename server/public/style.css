@@ -20,7 +20,8 @@
 .GameSession {
   flex: 1;
   display: flex;
-  flex-direction: row; }
+  flex-direction: row;
+  width: 100%; }
   .GameSession > * {
     height: 100%; }
   .GameSession .Video {
