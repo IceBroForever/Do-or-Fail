@@ -44217,7 +44217,7 @@ var GameSessionForPlayer = function (_React$Component) {
         value: function createSocket() {
             var _this2 = this;
 
-            var url = 'ws://' + window.location.host + '/gamesession/' + _auth2.default.getLogin() + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
+            var url = 'wss://' + window.location.host + '/gamesession/' + _auth2.default.getLogin() + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
 
             var socket = new WebSocket(url);
 
@@ -48673,7 +48673,7 @@ var GameSessionForWatcher = function (_React$Component) {
         value: function createSocket(player) {
             var _this2 = this;
 
-            var url = 'ws://' + window.location.host + '/gamesession/' + player + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
+            var url = 'wss://' + window.location.host + '/gamesession/' + player + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
 
             var socket = new WebSocket(url);
 
@@ -48721,8 +48721,6 @@ var GameSessionForWatcher = function (_React$Component) {
                 _this3.setState({
                     stream: event.stream
                 });
-
-                console.log('gere');
             };
 
             await this.pc.setRemoteDescription(new RTCSessionDescription(description));
