@@ -179,7 +179,7 @@ setTimeout(async function check(timerId) {
     let players = await getAll();
 
     for(let player of players){
-        if(new Date() - player.lastSeenOnline < 10000) {
+        if(new Date() - player.lastSeenOnline < 2000) {
             if(!player.online) {
                 player.online = true;
                 await player.save();
@@ -193,5 +193,5 @@ setTimeout(async function check(timerId) {
         }
     }
 
-    setTimeout(check, 10000);
-}, 10000);
+    setTimeout(check, 2000);
+}, 2000);

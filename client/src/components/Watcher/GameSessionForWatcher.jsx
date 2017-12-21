@@ -2,6 +2,7 @@ import React from 'react'
 import auth from '../../auth'
 import Dialog from 'material-ui/Dialog'
 import VideoReceiver from './VideoReceiver'
+import FlatButton from 'material-ui/FlatButton'
 import Chat from '../Chat'
 
 import '../../../styles/Dialog.scss'
@@ -29,10 +30,8 @@ export default class GameSessionForWatcher extends React.Component {
 
     componentWillReceiveProps(newProps) {
 
-        if (!newProps.show) {
-            this.destroyConnections();
-        } else {
-            if (!this.socket) this.socket = this.createSocket(newProps.player);
+        if (newProps.show) {
+            if(!this.socket) this.socket = this.createSocket(newProps.player);
         }
 
         this.setState({
@@ -43,11 +42,6 @@ export default class GameSessionForWatcher extends React.Component {
 
     componentWillUnmount() {
         this.destroyConnections();
-
-        this.setState({
-            stream: null,
-            show: false
-        });
     }
 
     createSocket(player) {
@@ -67,12 +61,19 @@ export default class GameSessionForWatcher extends React.Component {
             console.log(error);
         }
 
+        socket.onclose = async (event) => {
+            let byPlayer = event.reason == 'player disconnected';
+            if(byPlayer) await this.destroyConnections();
+            this.props.onClose(byPlayer);
+        }
+
         return socket;
     }
 
     async destroyConnections() {
         if (this.socket) {
-            await this.socket.close();
+            if (this.socket.readyState == 1)
+                await this.socket.close(1000, 'watcher disconnected');
             this.socket = null;
         }
 
@@ -126,13 +127,17 @@ export default class GameSessionForWatcher extends React.Component {
     }
 
     render() {
-        console.log(this.state.stream);
         return (
             <Dialog
                 open={this.state.show}
                 contentClassName='Dialog'
                 bodyClassName='Container'
-                actions={this.props.actions}
+                actions={[
+                    <FlatButton
+                        label='Disconnect'
+                        onClick={this.destroyConnections}
+                    />
+                ]}
             >
                 <div className='GameSession'>
                     <div className='Video'>

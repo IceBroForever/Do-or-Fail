@@ -67,8 +67,6 @@ GameSession.prototype.handleConnection = function (socket, req) {
     let url = Url.parse(req.url, true);
     let { login, role } = url.query;
 
-    console.log(login);
-
     if (role == 'player') {
         if (login == this.player.login) this.handlePlayerConnection(socket, login);
         else socket.terminate();
@@ -79,10 +77,10 @@ GameSession.prototype.handleConnection = function (socket, req) {
 
 GameSession.prototype.broadcast = function (data) {
     for (let watcher in this.watchers) {
-        this.watchers[watcher].send(data);
+        if (this.watchers[watcher].readyState == 1) this.watchers[watcher].send(data);
     }
 
-    this.player.socket.send(data);
+    if (this.player.socket.readyState == 1) this.player.socket.send(data);
 }
 
 GameSession.prototype.handleMessage = function (login, message) {
@@ -104,7 +102,6 @@ GameSession.prototype.watcherConnected = function (login, socket) {
 
 GameSession.prototype.watcherDisconnected = function (login) {
     delete this.watchers[login];
-    console.log(this.watchers);
 
     this.broadcast(JSON.stringify({
         type: 'watcher-disconnected',
@@ -120,7 +117,6 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
 
         switch (type) {
             case 'message': {
-                console.log(data);
                 this.handleMessage(this.player.login, data.message);
             } break;
             case 'offer': {
@@ -165,8 +161,9 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
         };
     });
 
-    socket.on('close', () => {
-        this.watcherDisconnected(login);
+    socket.on('close', (code, reason) => {
+        if (reason == 'watcher disconnected')
+            this.watcherDisconnected(login);
     });
 
     this.watcherConnected(login, socket);
@@ -185,7 +182,11 @@ GameSession.prototype.sendStreamInfoToPlayer = function (login, description) {
 }
 
 GameSession.prototype.closeSession = function () {
-    this.server.close(() => this.deleteCallback());
+    for (let watcher in this.watchers) {
+        if (this.watchers[watcher].readyState == 1) this.watchers[watcher].close(1000, 'player disconnected');
+        delete this.watchers[watcher];
+    }
+    this.deleteCallback();
 }
 
 module.exports = GameSession;

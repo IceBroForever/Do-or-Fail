@@ -5,6 +5,7 @@ import Avatar from 'material-ui/Avatar'
 import Dialog from 'material-ui/Dialog'
 import PlayerProfile from '../Player/PlayerProfile'
 import GameSession from './GameSessionForWatcher'
+import Snackbar from 'material-ui/Snackbar';
 
 import '../../../styles/Interface.scss'
 import '../../../styles/GoogleMap.scss'
@@ -25,7 +26,8 @@ export default class WatcherInterface extends React.Component {
         this.state = {
             status: statuses.ON_MAP,
             selectedPlayer: '',
-            players: []
+            players: [],
+            messageToShow: null
         };
 
         this.getPlayersOnline = this.getPlayersOnline.bind(this);
@@ -33,8 +35,9 @@ export default class WatcherInterface extends React.Component {
         this.onPlayerAvatarClicked = this.onPlayerAvatarClicked.bind(this);
         this.backToMap = this.backToMap.bind(this);
         this.connectToGameSession = this.connectToGameSession.bind(this);
+        this.onSessionClosed = this.onSessionClosed.bind(this);
 
-        this.timerId = setTimeout(this.getPlayersOnline, 5000);
+        this.timerId = setTimeout(this.getPlayersOnline, 1000);
     }
 
     async getPlayersOnline() {
@@ -53,7 +56,7 @@ export default class WatcherInterface extends React.Component {
             console.log(error);
         }
 
-        this.timerId = setTimeout(this.getPlayersOnline, 5000);
+        this.timerId = setTimeout(this.getPlayersOnline, 1000);
     }
 
     async onPlayerAvatarClicked(login, avatarProps) {
@@ -99,6 +102,18 @@ export default class WatcherInterface extends React.Component {
         });
     }
 
+    onSessionClosed(byPlayer) {
+        this.setState({
+            messageToShow: <Snackbar
+                open={true}
+                message={byPlayer ? "GameSession was closed by player" : "You disconnected from session"}
+                autoHideDuration={2000}
+            />,
+            status: statuses.ON_MAP,
+            selectedPlayer: ''
+        });
+    }
+
     componentWillUnmount() {
         clearTimeout(this.timerId);
     }
@@ -119,14 +134,8 @@ export default class WatcherInterface extends React.Component {
             ]
         );
 
-        let actionForSession = (
-            [
-                <FlatButton
-                    label='Disconnect'
-                    onClick={this.backToMap}
-                />
-            ]
-        );
+        let message = this.state.messageToShow;
+        this.state.messageToShow = null;
 
         return (
             <div className='UserInterface'>
@@ -141,13 +150,13 @@ export default class WatcherInterface extends React.Component {
                     show={this.state.status == statuses.PLAYER_SELECTED}
                     player={this.state.selectedPlayer}
                     actions={actionsForProfile}
-                // connectToGameSession={}
                 />
                 <GameSession
                     player={this.state.selectedPlayer}
                     show={this.state.status == statuses.IN_SESSION}
-                    actions={actionForSession}
+                    onClose={this.onSessionClosed}
                 />
+                {message}
             </div>
         );
     }

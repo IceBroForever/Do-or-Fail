@@ -19,7 +19,7 @@ export default class PlayerInterface extends React.Component {
         this.closeProfile = this.closeProfile.bind(this);
 
         this.state = {
-            timerId: setInterval(this.sendPositionInfo, 5000),
+            timerId: setInterval(this.sendPositionInfo, 1000),
             showProfile: false
         };
     }
