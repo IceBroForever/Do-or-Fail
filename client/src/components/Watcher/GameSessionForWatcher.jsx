@@ -2,6 +2,7 @@ import React from 'react'
 import auth from '../../auth'
 import Dialog from 'material-ui/Dialog'
 import VideoReceiver from './VideoReceiver'
+import Chat from '../Chat'
 
 import '../../../styles/Dialog.scss'
 import '../../../styles/GameSession.scss'
@@ -15,6 +16,7 @@ export default class GameSessionForWatcher extends React.Component {
         this.destroyConnections = this.destroyConnections.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
         this.handleStreamStaff = this.handleStreamStaff.bind(this);
+        this.sendMessage = this.sendMessage.bind(this);
 
         this.state = {
             stream: null,
@@ -27,10 +29,10 @@ export default class GameSessionForWatcher extends React.Component {
 
     componentWillReceiveProps(newProps) {
 
-        if(!newProps.show) {
+        if (!newProps.show) {
             this.destroyConnections();
         } else {
-            if(!this.socket) this.socket = this.createSocket(newProps.player);
+            if (!this.socket) this.socket = this.createSocket(newProps.player);
         }
 
         this.setState({
@@ -49,7 +51,7 @@ export default class GameSessionForWatcher extends React.Component {
     }
 
     createSocket(player) {
-        let url = 'wss://' + window.location.host +
+        let url = 'ws://' + window.location.host +
             '/gamesession/' + player +
             '?login=' + auth.getLogin() +
             '&role=' + auth.getRole() +
@@ -69,12 +71,12 @@ export default class GameSessionForWatcher extends React.Component {
     }
 
     async destroyConnections() {
-        if(this.socket) {
+        if (this.socket) {
             await this.socket.close();
             this.socket = null;
         }
 
-        if(this.pc) {
+        if (this.pc) {
             this.pc.close();
             this.pc = null;
         }
@@ -85,7 +87,18 @@ export default class GameSessionForWatcher extends React.Component {
             case 'offer': {
                 this.handleStreamStaff(data.description, data.iceCandidates);
             } break;
+            case 'message': {
+                this.chat.newMessage(data);
+            } break;
         }
+    }
+
+    sendMessage(message) {
+        this.socket.send(JSON.stringify({
+            type: 'message',
+            login: auth.getLogin(),
+            message
+        }));
     }
 
     async handleStreamStaff(description, iceCandidates) {
@@ -98,9 +111,9 @@ export default class GameSessionForWatcher extends React.Component {
         }
 
         await this.pc.setRemoteDescription(new RTCSessionDescription(description));
-        
+
         for (let candidate of iceCandidates) {
-            if(candidate) this.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            if (candidate) this.pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
 
         let answer = await this.pc.createAnswer();
@@ -127,9 +140,7 @@ export default class GameSessionForWatcher extends React.Component {
                             stream={this.state.stream}
                         />
                     </div>
-                    <div className='Chat'>
-                        chat
-                    </div>
+                    <Chat ref={instance => { this.chat = instance }} sendMessage={this.sendMessage} />
                 </div>
             </Dialog>
         );

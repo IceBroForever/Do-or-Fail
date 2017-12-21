@@ -1,0 +1,47 @@
+.Chat {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5cm;
+
+    .Messages{
+        flex: 1;
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column-reverse;
+
+        .Container{
+            display: flex;
+            width: 100%;
+            min-height: min-content;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            align-content: flex-end;
+
+            .Message{
+                width: 100%;
+                height: 60px;
+                flex: 0 0 auto;
+    
+                .Avatar{
+                    width: 60px;
+                    height: 60px;
+                    float: left;
+                }
+        
+                .Nick{
+                    font-size: 10px;
+                    font-weight: bold;
+                }
+        
+                .Info{
+                    color: blue;
+                    font-size: 20px;
+                    line-height: 60px;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
+}

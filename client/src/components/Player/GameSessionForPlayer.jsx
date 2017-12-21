@@ -1,6 +1,7 @@
 import React from 'react'
 import auth from '../../auth'
 import VideoStreamer from './VideoStreamer'
+import Chat from '../Chat'
 
 import '../../../styles/GameSession.scss'
 
@@ -13,18 +14,22 @@ export default class GameSessionForPlayer extends React.Component {
         this.handleMessage = this.handleMessage.bind(this);
         this.streamReady = this.streamReady.bind(this);
         this.handleWatcherConnection = this.handleWatcherConnection.bind(this);
+        this.sendMessage = this.sendMessage.bind(this);
 
         this.state = {
-
         };
 
         this.socket = this.createSocket();
         this.pcs = {};
         this.stream = null;
+
+        window.onunload = () => {
+            this.socket.close();
+        }
     }
 
     createSocket() {
-        let url = 'wss://' + window.location.host +
+        let url = 'ws://' + window.location.host +
             '/gamesession/' + auth.getLogin() +
             '?login=' + auth.getLogin() +
             '&role=' + auth.getRole() +
@@ -47,6 +52,11 @@ export default class GameSessionForPlayer extends React.Component {
         this.stream = stream;
     }
 
+    componentWillUnmount() {
+        this.socket.close();
+        window.onunload = null;
+    }
+
     handleMessage(data) {
         switch (data.type) {
             case 'ok': {
@@ -58,16 +68,20 @@ export default class GameSessionForPlayer extends React.Component {
             case 'answer': {
                 this.handleAnswer(data.login, data.description);
             } break;
+            case 'message': {
+                this.chat.newMessage(data);
+            } break;
         }
     }
 
-    async handleWatcherConnection(login) {console.log('here');
+    async handleWatcherConnection(login) {
+        console.log('here');
         this.pcs[login] = new RTCPeerConnection();
 
         let iceCandidates = [];
         this.pcs[login].onicecandidate = (event) => {
-            if(event.candidate) iceCandidates.push(event.candidate);
-            else  this.socket.send(JSON.stringify({
+            if (event.candidate) iceCandidates.push(event.candidate);
+            else this.socket.send(JSON.stringify({
                 type: 'offer',
                 login,
                 description,
@@ -84,6 +98,14 @@ export default class GameSessionForPlayer extends React.Component {
         await this.pcs[login].setRemoteDescription(description);
     }
 
+    sendMessage(message) {
+        this.socket.send(JSON.stringify({
+            type: 'message',
+            login: auth.getLogin(),
+            message
+        }));
+    }
+
     render() {
         return (
             <div className='GameSession'>
@@ -92,9 +114,7 @@ export default class GameSessionForPlayer extends React.Component {
                         streamGenerated={this.streamReady}
                     />
                 </div>
-                <div className='Chat'>
-                    chat
-                </div>
+                <Chat ref={instance => { this.chat = instance }} sendMessage={this.sendMessage} />
             </div>
         );
     }

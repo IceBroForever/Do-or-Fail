@@ -25,7 +25,8 @@ function GameSession(playerLogin, deleteCallback) {
         noServer: true,
         verifyClient: (info) => {
             return this.verifyClient(info);
-        }
+        },
+        clientTracking: false
     });
 
     this.server.on('connection', (socket, req) => {
@@ -103,6 +104,7 @@ GameSession.prototype.watcherConnected = function (login, socket) {
 
 GameSession.prototype.watcherDisconnected = function (login) {
     delete this.watchers[login];
+    console.log(this.watchers);
 
     this.broadcast(JSON.stringify({
         type: 'watcher-disconnected',
@@ -118,6 +120,7 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
 
         switch (type) {
             case 'message': {
+                console.log(data);
                 this.handleMessage(this.player.login, data.message);
             } break;
             case 'offer': {
