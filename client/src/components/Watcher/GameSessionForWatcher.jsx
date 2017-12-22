@@ -31,7 +31,7 @@ export default class GameSessionForWatcher extends React.Component {
     componentWillReceiveProps(newProps) {
 
         if (newProps.show) {
-            if(!this.socket) this.socket = this.createSocket(newProps.player);
+            if (!this.socket) this.socket = this.createSocket(newProps.player);
         }
 
         this.setState({
@@ -63,7 +63,7 @@ export default class GameSessionForWatcher extends React.Component {
 
         socket.onclose = async (event) => {
             let byPlayer = event.reason == 'player disconnected';
-            if(byPlayer) await this.destroyConnections();
+            if (byPlayer) await this.destroyConnections();
             this.props.onClose(byPlayer);
         }
 
@@ -89,7 +89,13 @@ export default class GameSessionForWatcher extends React.Component {
                 this.handleStreamStaff(data.description, data.iceCandidates);
             } break;
             case 'message': {
-                this.chat.newMessage(data);
+                this.chat.newMessage('message', data);
+            } break;
+            case 'watcher-connected': {
+                this.chat.newMessage('info', `${data.login} connected to session`);
+            } break;
+            case 'watcher-disconnected': {
+                this.chat.newMessage('info', `${data.login} disconnected from session`);
             } break;
         }
     }
@@ -145,7 +151,10 @@ export default class GameSessionForWatcher extends React.Component {
                             stream={this.state.stream}
                         />
                     </div>
-                    <Chat ref={instance => { this.chat = instance }} sendMessage={this.sendMessage} />
+                    <Chat
+                        ref={instance => { this.chat = instance }}
+                        sendMessage={this.sendMessage}
+                    />
                 </div>
             </Dialog>
         );

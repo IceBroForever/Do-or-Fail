@@ -1,6 +1,7 @@
 import React from 'react'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import Avatar from 'material-ui/Avatar'
 import auth from '../auth'
 
 import '../../styles/Chat.scss'
@@ -21,22 +22,39 @@ export default class Chat extends React.Component {
         };
     }
 
-    async generateBlock(message) {
+    async generateBlock(type, data) {
+        if (type == 'info') return (
+            <div
+                key={Math.random()}
+                className='Info'
+            >
+                {data}
+            </div>
+        );
+
+        let className = 'Message';
+        if (data.role == 'player') className += ' fromPlayer';
+
         return (
             <div
                 key={Math.random()}
-                className='Message'
+                className={className}
             >
-                <h3>{message.sender}</h3>
-                {message.message}
+                <div className='Avatar'>
+                    <Avatar
+                        src={`/${data.role}/${data.sender}/cover`}
+                    />
+                </div>
+                <div className='Nick'>{data.sender}</div>
+                {data.message}
             </div>
         );
     }
 
-    async newMessage(message) {
+    async newMessage(type, data) {
 
         let messages = this.state.messages;
-        messages.push(await this.generateBlock(message));
+        messages.push(await this.generateBlock(type, data));
 
         this.setState({
             messages

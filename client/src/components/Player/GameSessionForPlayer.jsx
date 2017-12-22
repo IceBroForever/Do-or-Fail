@@ -64,12 +64,16 @@ export default class GameSessionForPlayer extends React.Component {
             } break;
             case 'watcher-connected': {
                 this.handleWatcherConnection(data.login);
+                this.chat.newMessage('info', `${data.login} connected to session`);
             } break;
             case 'answer': {
                 this.handleAnswer(data.login, data.description);
             } break;
             case 'message': {
-                this.chat.newMessage(data);
+                this.chat.newMessage('message', data);
+            } break;
+            case 'watcher-disconnected': {
+                this.chat.newMessage('info', `${data.login} disconnected from session`);
             } break;
         }
     }
@@ -114,7 +118,10 @@ export default class GameSessionForPlayer extends React.Component {
                         streamGenerated={this.streamReady}
                     />
                 </div>
-                <Chat ref={instance => { this.chat = instance }} sendMessage={this.sendMessage} />
+                <Chat
+                    ref={instance => { this.chat = instance }}
+                    sendMessage={this.sendMessage}
+                />
             </div>
         );
     }

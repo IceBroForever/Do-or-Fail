@@ -83,10 +83,11 @@ GameSession.prototype.broadcast = function (data) {
     if (this.player.socket.readyState == 1) this.player.socket.send(data);
 }
 
-GameSession.prototype.handleMessage = function (login, message) {
+GameSession.prototype.handleMessage = function (login, role, message) {
     this.broadcast(JSON.stringify({
         type: 'message',
         sender: login,
+        role,
         message
     }));
 }
@@ -117,7 +118,7 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
 
         switch (type) {
             case 'message': {
-                this.handleMessage(this.player.login, data.message);
+                this.handleMessage(this.player.login, 'player', data.message);
             } break;
             case 'offer': {
                 let { description, iceCandidates } = data;
@@ -153,7 +154,7 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
 
         switch (type) {
             case 'message': {
-                this.handleMessage(login, data.message);
+                this.handleMessage(login, 'watcher', data.message);
             } break;
             case 'answer': {
                 this.sendStreamInfoToPlayer(login, data.description);
