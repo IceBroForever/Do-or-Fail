@@ -35,7 +35,9 @@ export default class GameSessionForPlayer extends React.Component {
     }
 
     createSocket() {
-        let url = 'ws://' + window.location.host +
+        let protocol = process.env.production ? 'wss://' : 'ws://';
+
+        let url = protocol + window.location.host +
             '/gamesession/' + auth.getLogin() +
             '?login=' + auth.getLogin() +
             '&role=' + auth.getRole() +

@@ -181,7 +181,7 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
             case 'confirm-fail': {
                 this.taskConfirmedFailed(login);
             } break;
-            case 'task-info':{
+            case 'task-info': {
                 this.sendTaskInfo(login);
             } break;
         };
@@ -208,7 +208,7 @@ GameSession.prototype.sendStreamInfoToPlayer = function (login, description) {
 };
 
 GameSession.prototype.sendTaskInfo = async function (login) {
-    if(this.status == statuses.WAITING_FOR_TASK){
+    if (this.status == statuses.WAITING_FOR_TASK) {
         this.watchers[login].send(JSON.stringify({
             type: 'task-info',
             status: this.status,
@@ -307,7 +307,11 @@ GameSession.prototype.taskConfirmedFailed = async function (login) {
     }));
 };
 
-GameSession.prototype.closeSession = function () {
+GameSession.prototype.closeSession = async function () {
+    if (this.status == statuses.DOING_TASK) {
+        (await playerDB.getByLogin(this.player.login)).taskDone(taskDB.TASK_STATUSES.FAILED);   
+    }
+
     for (let watcher in this.watchers) {
         if (this.watchers[watcher].readyState == 1) this.watchers[watcher].close(1000, 'player disconnected');
         delete this.watchers[watcher];

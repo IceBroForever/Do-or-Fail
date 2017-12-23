@@ -150,6 +150,28 @@
     justify-content: center;
     align-items: center;
     align-content: center; }
+
+.Profile {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow-y: auto; }
+  .Profile .Avatar {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 6cm; }
+  .Profile .Info {
+    flex: 3;
+    padding: 1cm; }
+    .Profile .Info .TaskBlock {
+      margin: 1cm 0; }
+      .Profile .Info .TaskBlock .Task {
+        margin: 0.5cm 1cm; }
 .Interface {
   position: relative;
   top: 0;

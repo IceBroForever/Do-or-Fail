@@ -30,4 +30,14 @@ router.get('/:login', async (req, res, next) => {
     };
 });
 
+router.get('/:login/fullInfo', async (req, res, next) => {
+    try{
+        let player = await playerDB.getByLogin(req.params.login);
+
+        return res.json(await player.getFullInfoForSend());
+    } catch (error) {
+        return next(error);
+    };
+});
+
 module.exports = router;

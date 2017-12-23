@@ -1,1 +1,32 @@
-@import 'Dialog.scss'
+@import 'Dialog.scss';
+
+.Profile {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow-y: auto;
+
+    .Avatar{
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 6cm;
+    }
+
+    .Info {
+        flex: 3;
+        padding: 1cm;
+
+        .TaskBlock {
+            margin: 1cm 0;
+
+            .Task{
+                margin: 0.5cm 1cm;
+            }
+        }
+    }
+}

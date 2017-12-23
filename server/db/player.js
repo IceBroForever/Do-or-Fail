@@ -129,6 +129,39 @@ playerSchema.methods.getInfoForSend = function () {
     };
 }
 
+playerSchema.methods.getFullInfoForSend = async function () {
+    let activeTask = await taskDB.getById(this.activeTask);
+
+    let complitedTasks = [];
+    for(let task of this.complitedTasks){
+        complitedTasks.push(await taskDB.getById(task));
+    }
+
+    let rejectedTasks = [];
+    for(let task of this.rejectedTasks){
+        rejectedTasks.push(await taskDB.getById(task));
+    }
+
+    let failedTasks = [];
+    for(let task of this.failedTasks){
+        failedTasks.push(await taskDB.getById(task));
+    }
+
+    return {
+        login: this.login,
+        position: {
+            latitude: this.position.latitude,
+            longitude: this.position.longitude
+        },
+        isOnline: this.online,
+        lastSeenOnline: this.lastSeenOnline,
+        activeTask,
+        complitedTasks,
+        rejectedTasks,
+        failedTasks
+    };
+}
+
 const Player = mongoose.model("Player", playerSchema);
 
 async function create(login, password, avatar) {
