@@ -54,7 +54,7 @@ export default class GameSessionForWatcher extends React.Component {
     }
 
     createSocket(player) {
-        let protocol = process.env.production ? 'wss://' : 'ws://';
+        let protocol = ~window.location.host.indexOf('localhost') ? 'ws://' : 'wss://';
 
         let url = protocol + window.location.host +
             '/gamesession/' + player +

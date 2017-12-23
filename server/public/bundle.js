@@ -46505,7 +46505,7 @@ exports.default = PlayerInterface;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
+
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -46580,7 +46580,7 @@ var GameSessionForPlayer = function (_React$Component) {
         value: function createSocket() {
             var _this2 = this;
 
-            var protocol = process.env.production ? 'wss://' : 'ws://';
+            var protocol = ~window.location.host.indexOf('localhost') ? 'ws://' : 'wss://';
 
             var url = protocol + window.location.host + '/gamesession/' + _auth2.default.getLogin() + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
 
@@ -46770,7 +46770,6 @@ var GameSessionForPlayer = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = GameSessionForPlayer;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 354 */
@@ -50898,7 +50897,7 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
+
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -51001,7 +51000,7 @@ var GameSessionForWatcher = function (_React$Component) {
         value: function createSocket(player) {
             var _this2 = this;
 
-            var protocol = process.env.production ? 'wss://' : 'ws://';
+            var protocol = ~window.location.host.indexOf('localhost') ? 'ws://' : 'wss://';
 
             var url = protocol + window.location.host + '/gamesession/' + player + '?login=' + _auth2.default.getLogin() + '&role=' + _auth2.default.getRole() + '&token=' + _auth2.default.getToken();
 
@@ -51255,7 +51254,6 @@ var GameSessionForWatcher = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = GameSessionForWatcher;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 382 */
