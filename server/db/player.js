@@ -160,6 +160,16 @@ async function getOnlinePlayers() {
     return await Player.find({ online: true }).exec();
 }
 
+async function findPlayersByLogin(login) {
+    let players = await Player.find().exec();
+
+    let finded = [];
+    for(let player of players) {
+        if(~player.login.toUpperCase().indexOf(login.toUpperCase())) finded.push(player);
+    }
+    return finded;
+}
+
 async function removeById(id) {
     let player = await Player.findById(id).exec();
     await avatarsDB.removeById(player.avatar);
@@ -172,6 +182,7 @@ module.exports = {
     getById,
     getByLogin,
     getOnlinePlayers,
+    findPlayersByLogin,
     removeById
 }
 

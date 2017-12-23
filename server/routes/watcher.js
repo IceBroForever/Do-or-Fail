@@ -5,16 +5,18 @@ const playerDB = require('../db/player');
 
 router.get('/getPlayersOnline', async (req, res, next) => {
     let players = await playerDB.getOnlinePlayers();
-    let dataForResponce = [];
 
-    for (let player of players) {
-        dataForResponce.push({
-            login: player.login,
-            position: player.position
-        })
-    }
+    players = players.map(player => player.getInfoForSend());
 
-    return res.json({ players: dataForResponce });
+    return res.json({ players });
+});
+
+router.get('/find', async (req, res, next) => {
+    let players = await playerDB.findPlayersByLogin(req.query.login);
+
+    players = players.map(player => { return player.getInfoForSend(); });
+
+    return res.json({ players });
 });
 
 module.exports = router;

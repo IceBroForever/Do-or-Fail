@@ -33,6 +33,7 @@
     "google-map-react": "^0.25.0",
     "jsonwebtoken": "^8.1.0",
     "material-ui": "^0.20.0",
+    "material-ui-search-bar": "^0.4.1",
     "mongoose": "^4.13.6",
     "passport": "^0.4.0",
     "passport-http-bearer": "^1.0.1",

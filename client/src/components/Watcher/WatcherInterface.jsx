@@ -6,11 +6,12 @@ import Dialog from 'material-ui/Dialog'
 import PlayerProfile from '../Player/PlayerProfile'
 import GameSession from './GameSessionForWatcher'
 import Snackbar from 'material-ui/Snackbar';
+import FlatButton from 'material-ui/FlatButton/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
+import Search from './Search'
 
 import '../../../styles/Interface.scss'
 import '../../../styles/GoogleMap.scss'
-import FlatButton from 'material-ui/FlatButton/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 
 const statuses = {
     ON_MAP: 'ON_MAP',
@@ -25,14 +26,14 @@ export default class WatcherInterface extends React.Component {
 
         this.state = {
             status: statuses.ON_MAP,
-            selectedPlayer: '',
+            selectedPlayer: null,
             players: [],
             messageToShow: null
         };
 
         this.getPlayersOnline = this.getPlayersOnline.bind(this);
         this.getPlayersMarkers = this.getPlayersMarkers.bind(this);
-        this.onPlayerAvatarClicked = this.onPlayerAvatarClicked.bind(this);
+        this.onPlayerClicked = this.onPlayerClicked.bind(this);
         this.backToMap = this.backToMap.bind(this);
         this.connectToGameSession = this.connectToGameSession.bind(this);
         this.onSessionClosed = this.onSessionClosed.bind(this);
@@ -47,8 +48,6 @@ export default class WatcherInterface extends React.Component {
                 url: '/watcher/getPlayersOnline'
             });
 
-            console.log(responce.data.players);
-
             this.setState({
                 players: responce.data.players
             });
@@ -59,10 +58,17 @@ export default class WatcherInterface extends React.Component {
         this.timerId = setTimeout(this.getPlayersOnline, 1000);
     }
 
-    async onPlayerAvatarClicked(login, avatarProps) {
+    async onPlayerClicked(login, avatarProps) {
+        console.log(await auth.request({
+            method: 'GET',
+            url: `/player/${login}`
+        }))
         this.setState({
             status: statuses.PLAYER_SELECTED,
-            selectedPlayer: login
+            selectedPlayer: (await auth.request({
+                method: 'GET',
+                url: `/player/${login}`
+            })).data
         });
     }
 
@@ -129,6 +135,7 @@ export default class WatcherInterface extends React.Component {
                 <RaisedButton
                     label='Connect to game session'
                     primary={true}
+                    disabled={this.state.selectedPlayer ? !this.state.selectedPlayer.isOnline : false}
                     onClick={this.connectToGameSession}
                 />
             ]
@@ -141,18 +148,21 @@ export default class WatcherInterface extends React.Component {
             <div className='UserInterface'>
                 <div className='GoogleMap'>
                     <GoogleMap
-                        onChildClick={this.onPlayerAvatarClicked}
+                        onChildClick={this.onPlayerClicked}
                     >
                         {this.getPlayersMarkers()}
                     </GoogleMap>
                 </div>
+                <Search
+                    onSelect={this.onPlayerClicked}
+                />
                 <PlayerProfile
                     show={this.state.status == statuses.PLAYER_SELECTED}
-                    player={this.state.selectedPlayer}
+                    player={this.state.selectedPlayer ? this.state.selectedPlayer.login : ''}
                     actions={actionsForProfile}
                 />
                 <GameSession
-                    player={this.state.selectedPlayer}
+                    player={this.state.selectedPlayer ? this.state.selectedPlayer.login : ''}
                     show={this.state.status == statuses.IN_SESSION}
                     onClose={this.onSessionClosed}
                 />
