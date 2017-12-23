@@ -139,7 +139,6 @@ export default class GameSessionForPlayer extends React.Component {
     }
 
     async handleWatcherConnection(login) {
-        console.log('here');
         this.pcs[login] = new RTCPeerConnection();
 
         let iceCandidates = [];
