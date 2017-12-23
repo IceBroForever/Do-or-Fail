@@ -4,6 +4,7 @@ import Dialog from 'material-ui/Dialog'
 import VideoReceiver from './VideoReceiver'
 import FlatButton from 'material-ui/FlatButton'
 import Chat from '../Chat'
+import TaskManager from '../TaskManager'
 
 import '../../../styles/Dialog.scss'
 import '../../../styles/GameSession.scss'
@@ -18,10 +19,16 @@ export default class GameSessionForWatcher extends React.Component {
         this.handleMessage = this.handleMessage.bind(this);
         this.handleStreamStaff = this.handleStreamStaff.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
+        this.onSuggestingTask = this.onSuggestingTask.bind(this);
+        this.onConfirmingDone = this.onConfirmingDone.bind(this);
+        this.onConfirmingFailed = this.onConfirmingFailed.bind(this);
 
         this.state = {
             stream: null,
-            show: false
+            show: false,
+            status: '',
+            creator: '',
+            mission: ''
         };
 
         this.socket = null;
@@ -31,7 +38,9 @@ export default class GameSessionForWatcher extends React.Component {
     componentWillReceiveProps(newProps) {
 
         if (newProps.show) {
-            if (!this.socket) this.socket = this.createSocket(newProps.player);
+            if (!this.socket) {
+                this.socket = this.createSocket(newProps.player);
+            }
         }
 
         this.setState({
@@ -67,6 +76,12 @@ export default class GameSessionForWatcher extends React.Component {
             this.props.onClose(byPlayer);
         }
 
+        socket.onopen = () => {
+            socket.send(JSON.stringify({
+                type: 'task-info'
+            }));
+        }
+
         return socket;
     }
 
@@ -96,6 +111,58 @@ export default class GameSessionForWatcher extends React.Component {
             } break;
             case 'watcher-disconnected': {
                 this.chat.newMessage('info', `${data.login} disconnected from session`);
+            } break;
+            case 'task-info': {
+                console.log(data);
+                let status = data.status,
+                    mission = data.mission || '',
+                    creator = data.creator || ''
+
+                this.setState({
+                    status,
+                    mission,
+                    creator
+                })
+            } break;
+            case 'task-suggested': {
+                this.chat.newMessage('info', `${data.creator} suggested new task: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_CONFIRMING',
+                    creator: data.creator,
+                    mission: data.mission
+                });
+            } break;
+            case 'task-confirmed': {
+                this.chat.newMessage('info', `${this.props.player} has confirmed task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'DOING_TASK',
+                    creator: data.creator,
+                    mission: data.mission
+                });
+            } break;
+            case 'task-rejected': {
+                this.chat.newMessage('info', `${this.props.player} has rejected task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
+            } break;
+            case 'task-done': {
+                this.chat.newMessage('info', `${this.props.player} has done task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
+            } break;
+            case 'task-failed': {
+                this.chat.newMessage('info', `${this.props.player} has failed task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
             } break;
         }
     }
@@ -132,6 +199,25 @@ export default class GameSessionForWatcher extends React.Component {
         }));
     }
 
+    onSuggestingTask(mission) {
+        this.socket.send(JSON.stringify({
+            type: 'suggest-task',
+            mission
+        }));
+    }
+
+    onConfirmingDone() {
+        this.socket.send(JSON.stringify({
+            type: 'confirm-done'
+        }));
+    }
+
+    onConfirmingFailed() {
+        this.socket.send(JSON.stringify({
+            type: 'confirm-fail'
+        }));
+    }
+
     render() {
         return (
             <Dialog
@@ -151,10 +237,21 @@ export default class GameSessionForWatcher extends React.Component {
                             stream={this.state.stream}
                         />
                     </div>
-                    <Chat
-                        ref={instance => { this.chat = instance }}
-                        sendMessage={this.sendMessage}
-                    />
+                    <div className='ChatAndTask'>
+                        <TaskManager
+                            status={this.state.status}
+                            creator={this.state.creator}
+                            mission={this.state.mission}
+                            isPlayer={false}
+                            onTaskSuggested={this.onSuggestingTask}
+                            onClickedDone={this.onConfirmingDone}
+                            onClickedFailed={this.onConfirmingFailed}
+                        />
+                        <Chat
+                            ref={instance => { this.chat = instance }}
+                            sendMessage={this.sendMessage}
+                        />
+                    </div>
                 </div>
             </Dialog>
         );

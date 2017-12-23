@@ -11,6 +11,12 @@ const playerDB = require('../db/player'),
     watcherDB = require('../db/watcher'),
     taskDB = require('../db/task');
 
+const statuses = {
+    WAITING_FOR_TASK: 'WAITING_FOR_TASK',
+    WAITING_FOR_CONFIRMING: 'WAITING_FOR_CONFIRMING',
+    DOING_TASK: 'DOING_TASK'
+}
+
 function GameSession(playerLogin, deleteCallback) {
     this.player = {
         socket: null,
@@ -20,6 +26,7 @@ function GameSession(playerLogin, deleteCallback) {
     this.watchers = {};
 
     this.currentTask = null;
+    this.status = statuses.WAITING_FOR_TASK;
 
     this.server = new WebSocket.Server({
         noServer: true,
@@ -123,7 +130,13 @@ GameSession.prototype.handlePlayerConnection = function (socket, login) {
             case 'offer': {
                 let { description, iceCandidates } = data;
                 this.sendStreamInfoToWatcher(data.login, description, iceCandidates);
-            }
+            } break;
+            case 'task-confirmed': {
+                this.taskConfirmed();
+            } break;
+            case 'task-rejected': {
+                this.taskRejected();
+            } break;
         };
     });
 
@@ -158,7 +171,19 @@ GameSession.prototype.handleWatcherConnection = function (socket, login) {
             } break;
             case 'answer': {
                 this.sendStreamInfoToPlayer(login, data.description);
-            }
+            } break;
+            case 'suggest-task': {
+                this.taskSuggested(login, data.mission);
+            } break;
+            case 'confirm-done': {
+                this.taskConfirmedDone(login);
+            } break;
+            case 'confirm-fail': {
+                this.taskConfirmedFailed(login);
+            } break;
+            case 'task-info':{
+                this.sendTaskInfo(login);
+            } break;
         };
     });
 
@@ -180,7 +205,107 @@ GameSession.prototype.sendStreamInfoToPlayer = function (login, description) {
         login,
         description
     }));
-}
+};
+
+GameSession.prototype.sendTaskInfo = async function (login) {
+    if(this.status == statuses.WAITING_FOR_TASK){
+        this.watchers[login].send(JSON.stringify({
+            type: 'task-info',
+            status: this.status,
+        }));
+    } else {
+        let task = await taskDB.getById(this.currentTask);
+
+        this.watchers[login].send(JSON.stringify({
+            type: 'task-info',
+            status: this.status,
+            creator: task.creator,
+            mission: task.mission
+        }));
+    }
+};
+
+GameSession.prototype.taskSuggested = async function (login, mission) {
+    if (this.status != statuses.WAITING_FOR_TASK) return;
+
+    this.status = statuses.WAITING_FOR_CONFIRMING;
+    this.currentTask = await taskDB.create(taskDB.TASK_STATUSES.ACTIVE, mission, login, this.player.login);
+
+    await (await playerDB.getByLogin(this.player.login)).setActiveTask(this.currentTask);
+    await (await watcherDB.getByLogin(login)).addCreatedTask(this.currentTask);
+
+    this.broadcast(JSON.stringify({
+        type: 'task-suggested',
+        creator: login,
+        mission
+    }));
+};
+
+GameSession.prototype.taskConfirmed = async function () {
+    if (this.status != statuses.WAITING_FOR_CONFIRMING) return;
+
+    this.status = statuses.DOING_TASK;
+
+    let task = await taskDB.getById(this.currentTask);
+
+    this.broadcast(JSON.stringify({
+        type: 'task-confirmed',
+        creator: task.creator,
+        mission: task.mission
+    }))
+};
+
+GameSession.prototype.taskRejected = async function () {
+    if (this.status != statuses.WAITING_FOR_CONFIRMING) return;
+
+    let task = await taskDB.getById(this.currentTask);
+
+    this.status = statuses.WAITING_FOR_TASK;
+    this.currentTask = null;
+
+    await (await playerDB.getByLogin(this.player.login)).taskDone(taskDB.TASK_STATUSES.REJECTED);
+
+    this.broadcast(JSON.stringify({
+        type: 'task-rejected',
+        creator: task.creator,
+        mission: task.mission
+    }));
+};
+
+GameSession.prototype.taskConfirmedDone = async function (login) {
+    if (this.status != statuses.DOING_TASK) return;
+
+    let task = await taskDB.getById(this.currentTask);
+
+    (await playerDB.getByLogin(this.player.login)).taskDone(taskDB.TASK_STATUSES.COMPLETED);
+
+    this.status = statuses.WAITING_FOR_TASK;
+    this.currentTask = null;
+
+    this.broadcast(JSON.stringify({
+        type: 'task-done',
+        creator: task.creator,
+        mission: task.mission,
+        confirmedBy: login
+    }));
+};
+
+GameSession.prototype.taskConfirmedFailed = async function (login) {
+    if (this.status != statuses.DOING_TASK) return;
+
+    let task = await taskDB.getById(this.currentTask);
+
+    (await playerDB.getByLogin(this.player.login)).taskDone(taskDB.TASK_STATUSES.FAILED);
+    this.status = statuses.WAITING_FOR_TASK;
+    this.currentTask = null;
+
+    this.broadcast(JSON.stringify({
+        type: 'task-failed',
+        creator: task.creator,
+        mission: task.mission,
+        confirmedBy: login
+    }));
+};
 
 GameSession.prototype.closeSession = function () {
     for (let watcher in this.watchers) {
@@ -188,6 +313,6 @@ GameSession.prototype.closeSession = function () {
         delete this.watchers[watcher];
     }
     this.deleteCallback();
-}
+};
 
 module.exports = GameSession;

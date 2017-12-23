@@ -42,7 +42,7 @@ async function create(status, mission, creator, addressee) {
     });
 
     await task.save();
-    return (await task.findOne({
+    return (await Task.findOne({
         status,
         mission,
         creator,

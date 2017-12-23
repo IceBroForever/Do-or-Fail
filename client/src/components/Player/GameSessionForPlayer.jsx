@@ -2,6 +2,7 @@ import React from 'react'
 import auth from '../../auth'
 import VideoStreamer from './VideoStreamer'
 import Chat from '../Chat'
+import TaskManager from '../TaskManager'
 
 import '../../../styles/GameSession.scss'
 
@@ -15,8 +16,13 @@ export default class GameSessionForPlayer extends React.Component {
         this.streamReady = this.streamReady.bind(this);
         this.handleWatcherConnection = this.handleWatcherConnection.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
+        this.onConfirmingTask = this.onConfirmingTask.bind(this);
+        this.onRejectingTask = this.onRejectingTask.bind(this);
 
         this.state = {
+            status: 'WAITING_FOR_TASK',
+            creator: '',
+            mission: ''
         };
 
         this.socket = this.createSocket();
@@ -75,7 +81,59 @@ export default class GameSessionForPlayer extends React.Component {
             case 'watcher-disconnected': {
                 this.chat.newMessage('info', `${data.login} disconnected from session`);
             } break;
+            case 'task-suggested': {
+                this.chat.newMessage('info', `${data.creator} suggested new task: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_CONFIRMING',
+                    creator: data.creator,
+                    mission: data.mission
+                });
+            } break;
+            case 'task-confirmed': {
+                this.chat.newMessage('info', `You have confirmed task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'DOING_TASK',
+                    creator: data.creator,
+                    mission: data.mission
+                });
+            } break;
+            case 'task-rejected': {
+                this.chat.newMessage('info', `You have rejected task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
+            } break;
+            case 'task-done': {
+                this.chat.newMessage('info', `You have done task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
+            } break;
+            case 'task-failed': {
+                this.chat.newMessage('info', `You have has failed task from ${data.creator}: ${data.mission}`);
+                this.setState({
+                    status: 'WAITING_FOR_TASK',
+                    creator: '',
+                    mission: ''
+                });
+            } break;
         }
+    }
+
+    onConfirmingTask(){
+        this.socket.send(JSON.stringify({
+            type: 'task-confirmed'
+        }));
+    }
+
+    onRejectingTask() {
+        this.socket.send(JSON.stringify({
+            type: 'task-rejected'
+        }));
     }
 
     async handleWatcherConnection(login) {
@@ -118,10 +176,20 @@ export default class GameSessionForPlayer extends React.Component {
                         streamGenerated={this.streamReady}
                     />
                 </div>
-                <Chat
-                    ref={instance => { this.chat = instance }}
-                    sendMessage={this.sendMessage}
-                />
+                <div className='ChatAndTask'>
+                    <TaskManager
+                        status={this.state.status}
+                        creator={this.state.creator}
+                        mission={this.state.mission}
+                        isPlayer={true}
+                        onConfirming={this.onConfirmingTask}
+                        onRejecting={this.onRejectingTask}
+                    />
+                    <Chat
+                        ref={instance => { this.chat = instance }}
+                        sendMessage={this.sendMessage}
+                    />
+                </div>
             </div>
         );
     }

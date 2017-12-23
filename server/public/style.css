@@ -28,11 +28,10 @@
  *                                          '200', 'a100')
  */
 .Chat {
-  flex: 3;
+  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column; }
-  .Chat * {
-    color: #757575; }
   .Chat .Messages {
     flex: 1;
     overflow-y: scroll;
@@ -77,6 +76,20 @@
           border-top: none; }
       .Chat .Messages .Container .fromPlayer {
         background-color: #b2ebf2; }
+  .Chat .Input {
+    width: 100%;
+    display: flex;
+    align-items: center; }
+/**
+ * Retrieves a color value from the $material-colors Sass map
+ * Inspired by https://github.com/nilskaspersson/Google-Material-UI-Color-Palette/
+ *
+ * @function
+ * @param {string} color-name             - quoted, lower-case, dasherized color
+ *                                          name (e.g. 'pink', 'amber')
+ * @param {string} [color-variant='500']  - quoted, lowercase color variant (e.g.
+ *                                          '200', 'a100')
+ */
 .Container {
   padding: 0 !important; }
 
@@ -84,11 +97,14 @@
   flex: 1;
   display: flex;
   flex-direction: row;
-  width: 100%; }
+  width: 100%;
+  padding-top: 25px; }
   .GameSession > * {
     height: 100%; }
+  .GameSession * {
+    color: #757575; }
   .GameSession .Video {
-    flex: 4;
+    flex: 3;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -99,6 +115,17 @@
       width: 100%;
       min-width: 100%;
       max-width: 100%; }
+  .GameSession .ChatAndTask {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start; }
+    .GameSession .ChatAndTask .TaskManager {
+      width: 100%;
+      margin-bottom: 25px; }
+      .GameSession .ChatAndTask .TaskManager .Text {
+        padding: 5px; }
 .Dialog {
   min-width: 25cm !important;
   max-width: 25cm !important;

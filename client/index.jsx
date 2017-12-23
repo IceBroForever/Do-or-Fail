@@ -19,4 +19,4 @@ function render() {
 }
 
 auth.verifyAuthorization()
-    .then(() => render(), () => render());
+    .then(() => render());

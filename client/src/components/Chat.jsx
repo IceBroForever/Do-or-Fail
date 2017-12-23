@@ -69,7 +69,8 @@ export default class Chat extends React.Component {
     }
 
     onClick() {
-        this.props.sendMessage(this.state.input);
+        if (this.state.input)
+            this.props.sendMessage(this.state.input);
         this.setState({
             input: ''
         });
@@ -83,14 +84,17 @@ export default class Chat extends React.Component {
                         {this.state.messages}
                     </div>
                 </div>
-                <div>
+                <div className='Input'>
                     <TextField
                         hintText={'Write a message'}
+                        style={{
+                            flex: '1'
+                        }}
                         value={this.state.input}
                         onChange={this.onInputChange}
                     />
                     <RaisedButton
-                        style={{ marginLeft: '20px' }}
+                        style={{ marginLeft: '10px' }}
                         label='Send'
                         primary={true}
                         onClick={this.onClick}

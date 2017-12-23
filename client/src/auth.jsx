@@ -31,7 +31,6 @@ export default class auth {
 
         } catch (error) {
             this.logOut();
-            throw error;
         }
     }
 
@@ -101,6 +100,7 @@ export default class auth {
                 data
             })
         } catch (error) {
+            console.log(error);
             throw error.response.data.error;
         }
     }
